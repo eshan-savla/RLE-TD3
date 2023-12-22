@@ -12,5 +12,6 @@ else
     echo "$(where python)"
     echo "activated venv"
     py -m pip install --upgrade pip
-    py -m pip install -r requirements.txt
 fi
+py -m pip install -r requirements.txt
+
