@@ -8,7 +8,9 @@ pytest-cov==3.0.0
 PyYAML==6.0.1
 scipy==1.11.3
 tqdm==4.62.3
+ipython==8.19.0
 tensorflow==2.15.0.post1
 gymnasium==0.29.1
 tensorflow-addons==0.23.0
 mujoco-py<2.2,>==2.1    
+gymnasium[classic-control]
