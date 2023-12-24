@@ -1,3 +1,10 @@
+import tensorflow as tf
+from actor import Actor
+from critic import Critic
+import numpy as np
+from noise import OUActionNoise
+
+
 class TD3Agent:
     def __init__(self, action_space, observation_shape, gamma=0.99, tau=0.001, epsilon=0.05, policy_noise=0.2, noise_clip=0.5, policy_freq=2):
         self.action_space = action_space
