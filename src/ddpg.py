@@ -46,12 +46,12 @@ class DDPGAgent:
 
     def act(self, observation, explore=True, random_action=False):
         if random_action or np.random.uniform(0, 1) < self.epsilon:
-            a = self.action_space.sample() # explore with random action
+            a = self.action_space.sample()
         else:
             a = self.actor(observation).numpy()[:, 0] # sample action from policy
             if explore:
-                for action in a:
-                    action += self.noise() # add noise for exploration
+                a = np.squeeze([action + self.noise() for action in a]) # add noise for exploration
+          
         a = np.clip(a, self.action_space.low, self.action_space.high) # setzt alle Wert größer als high auf high und alle kleiner als low auf low
         return a
 

@@ -12,7 +12,7 @@ def main():
         tf.config.experimental.set_memory_growth(device, True)
 
     replay_buffer = ReplayBuffer()
-    env = gym.make('Pendulum-v1', render_mode='rgb_array')
+    env = gym.make('Ant-v4', ctrl_cost_weight=0.1, xml_file = "C:/Studium/Master/Mujoco/model/ant/ant.xml", render_mode='human')
     agent = DDPGAgent(env.action_space, env.observation_space.shape[0])
     for i in range(1001):
         obs, _ = env.reset()
