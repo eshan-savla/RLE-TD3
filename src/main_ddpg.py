@@ -1,3 +1,5 @@
+from src.ddpg_config import cfg
+from hydra.utils import instantiate
 import gymnasium as gym
 import numpy as np
 import tensorflow as tf
@@ -6,15 +8,18 @@ from ddpg import DDPGAgent
 from replay_buffer import ReplayBuffer
 from functions import compute_avg_return
 
+
+
 def main():
     physical_devices = tf.config.list_physical_devices('GPU') 
     for device in physical_devices:
         tf.config.experimental.set_memory_growth(device, True)
 
-    replay_buffer = ReplayBuffer()
+    replay_buffer = instantiate(cfg.ReplayBuffer)
     env = gym.make('Pendulum-v1', render_mode='rgb_array')
-    agent = DDPGAgent(env.action_space, env.observation_space.shape[0])
-    for i in range(1001):
+    agent = DDPGAgent(env.action_space, env.observation_space.shape[0],gamma=cfg.DDPGAgent.gamma,tau=cfg.DDPGAgent.tau, epsilon=cfg.DDPGAgent.epsilon)
+    # agent.setNoise(cfg.noise.sigma, cfg.noise.theta, cfg.noise.dt)
+    for i in range(cfg.Training.epochs):
         obs, _ = env.reset()
         # gather experience
         agent.noise.reset()
@@ -34,7 +39,7 @@ def main():
                 
         # Learn from the experiences in the replay buffer.
         for _ in range(128):
-            s_states, s_actions, s_rewards, s_next_states, s_dones = replay_buffer.sample(64)
+            s_states, s_actions, s_rewards, s_next_states, s_dones = replay_buffer.sample(cfg.Training.sample_size, cfg.Training.unbalance)
             actor_l, critic_l = agent.learn(s_states, s_actions, s_rewards, s_next_states, s_dones)
             ep_actor_loss += actor_l
             ep_critic_loss += critic_l

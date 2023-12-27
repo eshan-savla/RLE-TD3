@@ -1,0 +1,42 @@
+ReplayBuffer:
+  _target_: replay_buffer.ReplayBuffer
+  capacity: 100000
+
+Training:
+  epochs: 1001
+  experience_duration: 200
+  batch_size: 128
+  sample_size: 64
+  unbalance: 0.8
+
+Actor:
+  units: [400, 300]
+  stddev: 0.00005
+
+Critic:
+  state_units: [400, 300]
+  action_units: [300,]
+  units: [150,]
+  stddev: 0.00005
+
+OUNoise:
+  _partial_: true
+  theta: 0.15
+  sigma: 0.2
+  dt: 0.01
+
+DDPGAgent:
+  gamma: 0.99
+  tau: 0.001
+  epsilon: 0.1
+  learning_rate: 0.0001
+
+TD3Agent:
+  gamma: 0.99
+  tau: 0.001
+  epsilon: 0.1
+  learning_rate: 0.0001
+  policy_delay: 2
+  noise_clip: 0.5
+ 
+

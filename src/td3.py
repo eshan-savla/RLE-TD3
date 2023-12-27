@@ -1,3 +1,5 @@
+from td3_config import cfg
+
 import tensorflow as tf
 from actor import Actor
 from critic import Critic
@@ -15,20 +17,20 @@ class TD3Agent:
         self.noise_clip = noise_clip
         self.policy_freq = policy_freq
 
-        self.actor = Actor(n_actions=action_space.shape[0])
-        self.critic_1 = Critic()
-        self.critic_2 = Critic()
+        self.actor = Actor(units=cfg.Actor.units,n_actions=action_space.shape[0], stddev=cfg.Actor.stddev)
+        self.critic_1 = Critic(state_units=cfg.Critic.state_units,action_units=cfg.Critic.action_units, units=cfg.Critic.units, stddev=cfg.Critic.stddev)
+        self.critic_2 = Critic(state_units=cfg.Critic.state_units,action_units=cfg.Critic.action_units, units=cfg.Critic.units, stddev=cfg.Critic.stddev)
 
         self.target_actor = Actor(n_actions=action_space.shape[0])
-        self.target_critic_1 = Critic()
-        self.target_critic_2 = Critic()
+        self.target_critic_1 = Critic(state_units=cfg.Critic.state_units,action_units=cfg.Critic.action_units, units=cfg.Critic.units, stddev=cfg.Critic.stddev)
+        self.target_critic_2 = Critic(state_units=cfg.Critic.state_units,action_units=cfg.Critic.action_units, units=cfg.Critic.units, stddev=cfg.Critic.stddev)
 
-        self.actor_optimizer = tf.keras.optimizers.Adam(learning_rate=0.0001)
-        self.critic_optimizer_1 = tf.keras.optimizers.Adam(learning_rate=0.001)
-        self.critic_optimizer_2 = tf.keras.optimizers.Adam(learning_rate=0.001)
+        self.actor_optimizer = tf.keras.optimizers.Adam(learning_rate=cfg.TD3Agent.learning_rate)
+        self.critic_optimizer_1 = tf.keras.optimizers.Adam(learning_rate=cfg.TD3Agent.learning_rate)
+        self.critic_optimizer_2 = tf.keras.optimizers.Adam(learning_rate=cfg.TD3Agent.learning_rate)
 
         self.noise = OUActionNoise(mean=np.zeros(np.array(self.action_space.sample()).shape),
-                                   std_deviation=float(0.2) * np.ones(1))
+                                   std_deviation=float(cfg.OUNoise.sigma) * np.ones(1),theta=cfg.OUNoise.theta, dt=cfg.OUNoise.dt)
 
         self._init_networks(observation_shape)
 
@@ -49,7 +51,7 @@ class TD3Agent:
         self.target_critic_2.set_weights(self.critic_2.get_weights())
 
     def compute_target_q(self, rewards, next_states, dones):
-        noise = np.clip(np.random.normal(0, self.policy_noise, size=self.action_space.shape), -self.noise_clip, self.noise_clip)
+        noise = np.clip(self.noise, -self.noise_clip, self.noise_clip)
         next_action = np.clip(self.target_actor(next_states) + noise, self.action_space.low, self.action_space.high)
 
         critic_input_1 = {'action': next_action, 'state': next_states}
