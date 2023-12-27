@@ -84,7 +84,8 @@ class TD3Agent:
         else:
             a = self.actor(observation).numpy()[:, 0] # sample action from policy
             if explore:
-                a += self.noise() # add noise for exploration
+                for action in a:
+                    action += self.noise() # add noise for exploration
         a = np.clip(a, self.action_space.low, self.action_space.high) # setzt alle Wert größer als high auf high und alle kleiner als low auf low
         return a
 

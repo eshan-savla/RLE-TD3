@@ -9,8 +9,10 @@ PyYAML==6.0.1
 scipy==1.11.3
 tqdm==4.62.3
 ipython==8.19.0
-tensorflow==2.15.0.post1
+tensorflow==2.15.0
 gymnasium==0.29.1
-tensorflow-addons==0.23.0
+tensorflow-addons
 hydra-core==1.3.2
 mujoco==3.1.1
+gymnasium[mujoco]
+mujoco-py
