@@ -49,48 +49,62 @@ class TD3Agent:
         self.target_critic_2.set_weights(self.critic_2.get_weights())
 
     def compute_target_q(self, rewards, next_states, dones):
-        noise = np.clip(np.random.normal(0, self.policy_noise, size=self.action_space.shape), -self.noise_clip, self.noise_clip)
-        next_action = np.clip(self.target_actor(next_states) + noise, self.action_space.low, self.action_space.high)
+        next_action = np.clip(self.target_actor(next_states) + np.clip(self.noise(), -self.noise_clip, self.noise_clip), self.action_space.low, self.action_space.high)
 
         critic_input_1 = {'action': next_action, 'state': next_states}
         critic_input_2 = {'action': next_action, 'state': next_states}
         next_q1 = self.target_critic_1(critic_input_1)
         next_q2 = self.target_critic_2(critic_input_2)
         next_q = np.minimum(next_q1, next_q2)
-
         target_q = rewards + (1 - dones) * next_q * self.gamma
         return target_q
 
+    def get_critic_grads(self, states, actions, target_qs, critic):
+        with tf.GradientTape() as tape: 
+            critic_input = {'action': actions, 'state': states} # kommt aus Replay Buffer
+            qs = critic(critic_input) # forward pass mit den Actions und States gibt die Q-Werte aus critic nicht target_critic
+            loss = tf.reduce_mean(tf.abs(target_qs - qs)) # loss ist der Durchschnitt der absoluten Differenz zwischen den Q-Werten und den target Q-Werten. 
+        gradients = tape.gradient(loss, self.critic.trainable_variables) # Partielle Ableitung
+        gradients = [tf.clip_by_value(grad, -1.0, 1.0) for grad in gradients]
+        return gradients, loss
+
+    def get_actor_grads(self, states):
+        with tf.GradientTape() as tape: # GradientTape speichert alle Operationen die auf Variablen ausgeführt werden
+            actions = self.actor(states) # forward pass mit den States gibt die Actions gemäß der Policy aus actor nicht target_actor
+            critic_input = {'action': actions, 'state': states}
+            qs = self.critic(critic_input) # forward pass mit den Actions und States gibt die Q-Werte aus critic nicht target_critic
+            loss = -tf.math.reduce_mean(qs) # loss ist der negative Durchschnitt der Q-Werte. Ziel ist loss möglichst zu minimieren. Heißt negativere Zahl ist besser.
+        gradients = tape.gradient(loss, self.actor.trainable_variables) # Gradienten berechnen, die loss nach den Gewichten und Biases ableiten. Partielle Ableitung
+        gradients = [tf.clip_by_value(grad, -1.0, 1.0) for grad in gradients] # Gradienten clippen um zu verhindern, dass die Gradienten zu groß werden
+        return gradients, loss
+    
+    def act(self, observation, explore=True, random_action=False):
+        if random_action or np.random.uniform(0, 1) < self.epsilon:
+            a = self.action_space.sample() # explore with random action
+        else:
+            a = self.actor(observation).numpy()[:, 0] # sample action from policy
+            if explore:
+                a += self.noise() # add noise for exploration
+        a = np.clip(a, self.action_space.low, self.action_space.high) # setzt alle Wert größer als high auf high und alle kleiner als low auf low
+        return a
+
     def learn(self, states, actions, rewards, next_states, dones, step):
         target_qs = self.compute_target_q(rewards, next_states, dones)
-
-        with tf.GradientTape() as tape1, tf.GradientTape() as tape2:
-            critic_input_1 = {'action': actions, 'state': states}
-            critic_input_2 = {'action': actions, 'state': states}
-            qs1 = self.critic_1(critic_input_1)
-            qs2 = self.critic_2(critic_input_2)
-            critic_loss1 = tf.reduce_mean(tf.square(target_qs - qs1))
-            critic_loss2 = tf.reduce_mean(tf.square(target_qs - qs2))
-
-        critic_grads1 = tape1.gradient(critic_loss1, self.critic_1.trainable_variables)
-        critic_grads2 = tape2.gradient(critic_loss2, self.critic_2.trainable_variables)
-
+        critic_grads1, _ = self.get_critic_grads(states, actions, target_qs, self.critic_1)
+        critic_grads2, _ = self.get_critic_grads(states, actions, target_qs, self.critic_2)
         self.critic_optimizer_1.apply_gradients(zip(critic_grads1, self.critic_1.trainable_variables))
         self.critic_optimizer_2.apply_gradients(zip(critic_grads2, self.critic_2.trainable_variables))
 
         if step % self.policy_freq == 0:
-            with tf.GradientTape() as tape:
-                new_actions = self.actor(states)
-                critic_input = {'action': new_actions, 'state': states}
-                actor_loss = -self.critic_1(critic_input)
-                actor_loss = tf.math.reduce_mean(actor_loss)
-
-            actor_grads = tape.gradient(actor_loss, self.actor.trainable_variables)
+            actor_grads = self.get_actor_grads(states)
             self.actor_optimizer.apply_gradients(zip(actor_grads, self.actor.trainable_variables))
+            self.target_update()
+           
+    def target_update(self):
+        TD3Agent.update_target(self.target_actor, self.actor, self.tau)
+        TD3Agent.update_target(self.target_critic_1, self.critic_1, self.tau)
+        TD3Agent.update_target(self.target_critic_2, self.critic_2, self.tau)
 
-            self.update_target(self.target_actor, self.actor, self.tau)
-            self.update_target(self.target_critic_1, self.critic_1, self.tau)
-            self.update_target(self.target_critic_2, self.critic_2, self.tau)
 
     @staticmethod
     def update_target(model_target, model_ref, tau=0.0):
