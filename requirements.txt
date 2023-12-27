@@ -11,8 +11,10 @@ tqdm==4.62.3
 ipython==8.19.0
 tensorflow==2.15.0.post1
 gymnasium==0.29.1
-gymnasium[classic-control]
-gymnasium[mujoco]
+gymnasium[classic_control]
+cython<3.0,>=0.27.3
+mujoco-py<2.2,>=2.1
+imageio
 tensorflow-addons==0.23.0
 hydra-core==1.3.2
 mujoco==3.1.1
