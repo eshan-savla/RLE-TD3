@@ -7,20 +7,35 @@ import numpy as np
 from noise import OUActionNoise
 
 
+## Basis = added noise td3
+
 class TD3Agent:
+<<<<<<< HEAD
     def __init__(self, action_space, observation_shape, gamma=0.99, tau=0.001, epsilon=0.05, noise_clip=0.5, policy_freq=2):
+=======
+    def __init__(self, action_space, observation_shape, gamma=0.99, tau=0.0005, epsilon=0.05, policy_noise=0.2, noise_clip=0.5, policy_upd_freq=2):
+>>>>>>> a1ee3d4 (td3 for merge)
         self.action_space = action_space
-        self.tau = tau  # target network weight adaptation
+        self.tau = tau  # target network weight adaptation       ---> TODO: check if default value is correct with regard to the paper
         self.gamma = gamma  # discount factor
         self.epsilon = epsilon
         self.noise_clip = noise_clip
+<<<<<<< HEAD
         self.policy_freq = policy_freq
         self.previous_actor_loss = 0
+=======
+        
+        #delayed policy update
+        self.policy_upd_freq = policy_upd_freq   #default equals the recommendation of the paper: One policy update for every two q-function updates
+>>>>>>> a1ee3d4 (td3 for merge)
 
         self.actor = Actor(units=cfg.Actor.units,n_actions=action_space.shape[0], stddev=cfg.Actor.stddev)
         self.critic_1 = Critic(state_units=cfg.Critic.state_units,action_units=cfg.Critic.action_units, units=cfg.Critic.units, stddev=cfg.Critic.stddev)
         self.critic_2 = Critic(state_units=cfg.Critic.state_units,action_units=cfg.Critic.action_units, units=cfg.Critic.units, stddev=cfg.Critic.stddev)
 
+        # Initialize target networks as copies of the regular networks with their own weights and biases being updated slowly over time
+        # The use of target networks introduces a delay in updating the actor network which helps to reduce the variance in the learning process
+        # benefits: more stable and reliable q-value estimates during training process
         self.target_actor = Actor(n_actions=action_space.shape[0])
         self.target_critic_1 = Critic(state_units=cfg.Critic.state_units,action_units=cfg.Critic.action_units, units=cfg.Critic.units, stddev=cfg.Critic.stddev)
         self.target_critic_2 = Critic(state_units=cfg.Critic.state_units,action_units=cfg.Critic.action_units, units=cfg.Critic.units, stddev=cfg.Critic.stddev)
@@ -50,23 +65,68 @@ class TD3Agent:
         self.target_critic_1.set_weights(self.critic_1.get_weights())
         self.target_critic_2.set_weights(self.critic_2.get_weights())
 
+<<<<<<< HEAD
     def compute_target_q(self, rewards, next_states, dones):
         next_action = np.clip(self.target_actor(next_states) + np.clip(self.noise(), -self.noise_clip, self.noise_clip), self.action_space.low, self.action_space.high)
+=======
+
+    def compute_target_q(self, rewards, next_states, dones): 
+        """_summary_:
+        Double Q-Learning
+        Applying the 2 critic network philosophy of TD3 to the target q-value calculation
+        Using the minimum of both q-values (expected cumulative reward) to reduce the overestimation bias as a parameter of the neural network
+           
+        Args:
+            rewards: reward for a given state-action pair
+            next_states: next state after taking action in a given state
+            dones: boolean value indicating if the episode is finished or not
+
+        Returns:
+            target_q: desired/ target estimate of q-value(cumulative reward) for a given state-action pair
+        """
+        next_action = np.clip(self.target_actor(next_states) + np.clip(self.noise(), -self.noise_clip, self.noise_clip), self.action_space.low, self.action_space.high)
+
+        #Both critic networks need to be used to compute the q-value to reduce the overestimation bias by using the the minimum of both q-values
+>>>>>>> a1ee3d4 (td3 for merge)
         critic_input_1 = {'action': next_action, 'state': next_states}
         critic_input_2 = {'action': next_action, 'state': next_states}
         next_q1 = self.target_critic_1(critic_input_1)
         next_q2 = self.target_critic_2(critic_input_2)
+<<<<<<< HEAD
         next_q = np.minimum(next_q1, next_q2)
         target_q = rewards + (1 - dones) * next_q * self.gamma
         return target_q
 
     @staticmethod
     def get_critic_grads(states, actions, target_qs, critic):
+=======
+
+        #Evaluating both critics results and using the minimum of both
+        next_q = np.minimum(next_q1, next_q2) #calculate the minimum to prevent overestimation bias
+        target_q = rewards + (1 - dones) * next_q * self.gamma    #calulated by using the Bellman equation representing the expected cumulative reward that an agent can achieve by taking action in given state by following a policy
+        
+        return target_q
+
+    def get_critic_grads(self, states, actions, target_qs, critic):
+
+        """_summary_:
+        Calcualation of gradients and loss for critic network by a compution q-values and estimated q-values.
+        The loss is calucatted by the mean absolute difference between target Q-values and estimated q-values.
+        The gradients are calculated by using the loss and the trainable variables of the critic network.
+        They are clipped to prevent extreme values in rise/ falls of the gradients.
+
+        Returns:
+            gradients: gradients of the critic network
+            loss: loss of the critic network
+        """
+
+>>>>>>> a1ee3d4 (td3 for merge)
         with tf.GradientTape() as tape: 
             critic_input = {'action': actions, 'state': states} # kommt aus Replay Buffer
             qs = critic(critic_input) # forward pass mit den Actions und States gibt die Q-Werte aus critic nicht target_critic
             loss = tf.reduce_mean(tf.abs(target_qs - qs)) # loss ist der Durchschnitt der absoluten Differenz zwischen den Q-Werten und den target Q-Werten. 
         gradients = tape.gradient(loss, critic.trainable_variables) # Partielle Ableitung
+<<<<<<< HEAD
         gradients = [tf.clip_by_value(grad, -1.0, 1.0) for grad in gradients]
         return gradients, loss, 
 
@@ -75,6 +135,29 @@ class TD3Agent:
             actions = self.actor(states) # forward pass mit den States gibt die Actions gemäß der Policy aus actor nicht target_actor
             critic_input = {'action': actions, 'state': states}
             qs = self.critic_1(critic_input) # forward pass mit den Actions und States gibt die Q-Werte aus critic nicht target_critic
+=======
+        gradients = [tf.clip_by_value(grad, -1.0, 1.0) for grad in gradients]  #gradient clipping as part of Clipped Double Q-Learning
+        return gradients, loss
+
+    def get_actor_grads(self, states, target_critic):    #use target critic insted of regular critic to stabilize learning process and soften issue of overestimation bias
+        """_summary_:
+        Calculation of the gradients and losses for the actor network. 
+        Computation of the action for given state using the actor network. 
+        Computation of Q-values using critic network. 
+        Calucation of loss as negative mean of Q-values.
+        Compuation of the gradients of the loss with respect to the trainable variables of the actor network.
+
+        Returns:
+            gradients: gradients of the actor network (policy)
+            loss: loss of the actor network (policy)
+        """
+        with tf.GradientTape() as tape: # GradientTape speichert alle Operationen die auf Variablen ausgeführt werden
+            actions = self.actor(states) # forward pass mit den States gibt die Actions gemäß der Policy aus actor nicht target_actor
+            critic_input = {'action': actions, 'state': states}
+            
+            qs = target_critic(critic_input) # forward pass mit den Actions und States gibt die Q-Werte aus critic nicht target_critic
+            
+>>>>>>> a1ee3d4 (td3 for merge)
             loss = -tf.math.reduce_mean(qs) # loss ist der negative Durchschnitt der Q-Werte. Ziel ist loss möglichst zu minimieren. Heißt negativere Zahl ist besser.
         gradients = tape.gradient(loss, self.actor.trainable_variables) # Gradienten berechnen, die loss nach den Gewichten und Biases ableiten. Partielle Ableitung
         gradients = [tf.clip_by_value(grad, -1.0, 1.0) for grad in gradients] # Gradienten clippen um zu verhindern, dass die Gradienten zu groß werden
@@ -82,16 +165,26 @@ class TD3Agent:
     
     def act(self, observation, explore=True, random_action=False):
         if random_action or np.random.uniform(0, 1) < self.epsilon:
+<<<<<<< HEAD
             a = self.action_space.sample() # explore with random action
         else:
             a = self.actor(observation).numpy()[:, 0] # sample action from policy
             if explore:
                  a = np.squeeze([action + self.noise() for action in a]) # add noise for exploration
+=======
+            a = self.action_space.sample()
+        else:
+            a = self.actor(observation).numpy()[:, 0] # sample action from policy
+            if explore:
+                a = np.squeeze([action + self.noise() for action in a]) # add noise for exploration
+          
+>>>>>>> a1ee3d4 (td3 for merge)
         a = np.clip(a, self.action_space.low, self.action_space.high) # setzt alle Wert größer als high auf high und alle kleiner als low auf low
         return a
 
     def learn(self, states, actions, rewards, next_states, dones, step):
         target_qs = self.compute_target_q(rewards, next_states, dones)
+<<<<<<< HEAD
         critic_grads1, critics1_l = self.get_critic_grads(states, actions, target_qs, self.critic_1)
         critic_grads2, critics2_l = self.get_critic_grads(states, actions, target_qs, self.critic_2)
         self.critic_optimizer_1.apply_gradients(zip(critic_grads1, self.critic_1.trainable_variables))
@@ -104,14 +197,48 @@ class TD3Agent:
           
         return self.previous_actor_loss, critics1_l, critics2_l
     
+=======
+        critic_grads1, _ = self.get_critic_grads(states, actions, target_qs, self.critic_1)
+        critic_grads2, _ = self.get_critic_grads(states, actions, target_qs, self.critic_2)
+        self.critic_optimizer_1.apply_gradients(zip(critic_grads1, self.critic_1.trainable_variables))
+        self.critic_optimizer_2.apply_gradients(zip(critic_grads2, self.critic_2.trainable_variables))
+
+        if step % self.policy_upd_freq == 0:    # default: one update for every second q-function update
+            actor_grads = self.get_actor_grads(states)
+            self.actor_optimizer.apply_gradients(zip(actor_grads, self.actor.trainable_variables))  #updates weights and biases of actor network by using the calculated gradients from the backpropagation
+            self.target_update()
+           
+>>>>>>> a1ee3d4 (td3 for merge)
     def target_update(self):
         TD3Agent.update_target(self.target_actor, self.actor, self.tau)
         TD3Agent.update_target(self.target_critic_1, self.critic_1, self.tau)
         TD3Agent.update_target(self.target_critic_2, self.critic_2, self.tau)
+<<<<<<< HEAD
 
 
     @staticmethod
     def update_target(model_target, model_ref, tau=0.0):
+=======
+
+
+    @staticmethod     
+        # Decorator is used to define a method that belongs to the class itself rather than an instance of the class. 
+        # It allows for the creation of utility functions or operations that are related to the class but do not require access to instance-specific data. 
+        # Their methods can be called directly on the class without the need for an instance
+    def update_target(model_target, model_ref, tau=0.005):
+        """_summary_:
+        Update of the target networks can be done periodically by slowly blending their weights with the weights of the regular networks.
+        Slow updates smoothen the learning process and provides more consistent and accurate q-value estimates.
+        
+        Args:
+            model_target: target network to be updated
+            model_ref: regular network to be used as reference
+            tau: blending factor, default value is 0.005      --TODO: check if default value is correct with regard to the paper
+        """
+>>>>>>> a1ee3d4 (td3 for merge)
         new_weights = [tau * ref_weight + (1 - tau) * target_weight for (target_weight, ref_weight) in
                        list(zip(model_target.get_weights(), model_ref.get_weights()))]
         model_target.set_weights(new_weights)
+
+
+    
