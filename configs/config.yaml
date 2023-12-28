@@ -38,5 +38,7 @@ TD3Agent:
   learning_rate: 0.0001
   policy_freq: 2
   noise_clip: 0.5
+  weights_path: ../checkpoints/
+    
  
 

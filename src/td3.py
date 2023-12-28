@@ -1,4 +1,7 @@
 from td3_config import cfg
+from logging import log
+from datetime import datetime
+import os
 
 import tensorflow as tf
 from actor import Actor
@@ -18,6 +21,7 @@ class TD3Agent:
         self.noise_clip = noise_clip
         self.policy_freq = policy_freq
         self.previous_actor_loss = 0
+        self.save_dir = None
 
         self.actor = Actor(units=cfg.Actor.units,n_actions=action_space.shape[0], stddev=cfg.Actor.stddev)
         self.critic_1 = Critic(state_units=cfg.Critic.state_units,action_units=cfg.Critic.action_units, units=cfg.Critic.units, stddev=cfg.Critic.stddev)
@@ -177,5 +181,54 @@ class TD3Agent:
                        list(zip(model_target.get_weights(), model_ref.get_weights()))]
         model_target.set_weights(new_weights)
 
+    def save_weights(self):
+        if self.save_dir is None:
+            now = datetime.now()
+            self.save_dir = now.strftime("%Y-%m-%d_%H-%M")
+            os.makedirs(cfg.TD3Agent.weights_path + self.save_dir, exist_ok=True)
+            save_dir = cfg.TD3Agent.weights_path + self.save_dir + "/"
+        
+        np.save(save_dir + "actor_weights", self.actor.get_weights()[0])
+        np.save(save_dir + "actor_biases", self.actor.get_weights()[1])
+        np.save(save_dir + "critic1_weights", self.critic_1.get_weights()[0])
+        np.save(save_dir + "critic1_biases", self.critic_1.get_weights()[1])
+        np.save(save_dir + "critic2_weights", self.critic_2.get_weights()[0])
+        np.save(save_dir + "critic2_biases", self.critic_2.get_weights()[1])
 
-    
+        np.save(save_dir + "target_actor_weights", self.target_actor.get_weights()[0])
+        np.save(save_dir + "target_actor_biases", self.target_actor.get_weights()[1])
+        np.save(save_dir + "target_critic1_weights", self.target_critic_1.get_weights()[0])
+        np.save(save_dir + "target_critic1_biases", self.target_critic_1.get_weights()[1])
+        np.save(save_dir + "target_critic2_weights", self.target_critic_2.get_weights()[0])
+        np.save(save_dir + "target_critic2_biases", self.target_critic_2.get_weights()[1])
+
+    def load_weights(self, use_latest:bool=True, load_dir:str=None):
+        if use_latest:
+            load_dir = os.path.join(cfg.TD3Agent.weights_path,max(os.listdir(cfg.TD3Agent.weights_path))) + "/"
+
+        if self.actor.trainable:
+            log.warn("Actor is trainable, setting to false. This is irreversible!")
+            self.actor.trainable = False
+        if self.critic_1.trainable:
+            log.warn("Critic 1 is trainable, setting to false. This is irreversible!")
+            self.critic_1.trainable = False
+        if self.critic_2.trainable:
+            log.warn("Critic 2 is trainable, setting to false. This is irreversible!")
+            self.critic_2.trainable = False
+        if self.target_actor.trainable:
+            log.warn("Target Actor is trainable, setting to false. This is irreversible!")
+            self.target_actor.trainable = False
+        if self.target_critic_1.trainable:
+            log.warn("Target Critic 1 is trainable, setting to false. This is irreversible!")
+            self.target_critic_1.trainable = False
+        if self.target_critic_2.trainable:
+            log.warn("Target Critic 2 is trainable, setting to false. This is irreversible!")
+            self.target_critic_2.trainable = False
+
+        self.actor.set_weights([np.load(load_dir + "actor_weights.npy"), np.load(load_dir + "actor_biases.npy")])
+        self.critic_1.set_weights([np.load(load_dir + "critic1_weights.npy"), np.load(load_dir + "critic1_biases.npy")])
+        self.critic_2.set_weights([np.load(load_dir + "critic2_weights.npy"), np.load(load_dir + "critic2_biases.npy")])
+
+        self.target_actor.set_weights([np.load(load_dir + "target_actor_weights.npy"), np.load(load_dir + "target_actor_biases.npy")])
+        self.target_critic_1.set_weights([np.load(load_dir + "target_critic1_weights.npy"), np.load(load_dir + "target_critic1_biases.npy")])
+        self.target_critic_2.set_weights([np.load(load_dir + "target_critic2_weights.npy"), np.load(load_dir + "target_critic2_biases.npy")])

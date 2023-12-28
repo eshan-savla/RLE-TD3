@@ -1,6 +1,6 @@
 from td3_config import cfg
 from hydra.utils import instantiate
-
+import os
 import gymnasium as gym
 import numpy as np
 import tensorflow as tf
@@ -13,7 +13,7 @@ def main():
     physical_devices = tf.config.list_physical_devices('GPU') 
     for device in physical_devices:
         tf.config.experimental.set_memory_growth(device, True)
-
+    os.chdir(os.path.dirname(os.path.abspath(__file__)))
     replay_buffer = instantiate(cfg.ReplayBuffer)
     env = gym.make('Ant-v3', ctrl_cost_weight=0.1, xml_file = "../models/ant.xml", render_mode='rgb_array')
     agent = TD3Agent(env.action_space, env.observation_space.shape[0],gamma=cfg.TD3Agent.gamma,tau=cfg.TD3Agent.tau, epsilon=cfg.TD3Agent.epsilon, noise_clip=cfg.TD3Agent.noise_clip, policy_freq=cfg.TD3Agent.policy_freq)
@@ -46,7 +46,9 @@ def main():
         if i % 25 == 0:
             avg_return = compute_avg_return(env, agent, num_episodes=2, render=False)
             print(
-                f'epoch {i}, actor loss {ep_actor_loss / steps}, critic 1 loss {ep_critic1_loss / steps}, critic 2 loss {ep_critic2_loss/steps} , avg return {avg_return}')        
+                f'epoch {i}, actor loss {ep_actor_loss / steps}, critic 1 loss {ep_critic1_loss / steps}, critic 2 loss {ep_critic2_loss/steps} , avg return {avg_return}')
+            agent.save_weights()
+
     compute_avg_return(env, agent, num_episodes=10, render=True)
     env.close()
 
