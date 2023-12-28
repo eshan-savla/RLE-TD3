@@ -83,8 +83,8 @@ class TD3Agent:
         target_q = rewards + (1 - dones) * next_q * self.gamma    #calulated by using the Bellman equation representing the expected cumulative reward that an agent can achieve by taking action in given state by following a policy
         
         return target_q
-
-    def get_critic_grads(self, states, actions, target_qs, critic):
+    @staticmethod
+    def get_critic_grads(states, actions, target_qs, critic):
 
         """_summary_:
         Calcualation of gradients and loss for critic network by a compution q-values and estimated q-values.
@@ -147,7 +147,7 @@ class TD3Agent:
         self.critic_optimizer_2.apply_gradients(zip(critic_grads2, self.critic_2.trainable_variables))
 
         if step % self.policy_freq == 0:
-            actor_grads, self.previous_actor_loss = self.get_actor_grads(states)
+            actor_grads, self.previous_actor_loss = self.get_actor_grads(states, self.target_critic_1)
             self.actor_optimizer.apply_gradients(zip(actor_grads, self.actor.trainable_variables))
             self.target_update()
           
