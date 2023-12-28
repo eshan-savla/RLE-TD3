@@ -4,7 +4,7 @@ ReplayBuffer:
 
 Training:
   epochs: 1001
-  experience_duration: 200
+  max_steps: 200
   batch_size: 128
   sample_size: 64
   unbalance: 0.8
@@ -36,7 +36,7 @@ TD3Agent:
   tau: 0.001
   epsilon: 0.1
   learning_rate: 0.0001
-  policy_delay: 2
+  policy_freq: 2
   noise_clip: 0.5
  
 
