@@ -1,3 +1,5 @@
+from ddpg_config import cfg
+
 import tensorflow as tf
 import numpy as np
 from critic import Critic
@@ -10,20 +12,22 @@ class DDPGAgent:
         self.tau = tau  # target network weight adaptation
         self.gamma = gamma  # discount factor
         self.epsilon = epsilon
+        self.actor = Actor(units=cfg.Actor.units, n_actions=action_space.shape[0], stddev=cfg.Actor.stddev) # Actor und Critic initialisieren
+        self.critic = Critic(state_units=cfg.Critic.state_units,action_units=cfg.Critic.action_units, units=cfg.Critic.units, stddev=cfg.Critic.stddev)
 
-        self.actor = Actor(n_actions=action_space.shape[0]) # Actor und Critic initialisieren
-        self.critic = Critic()
+        self.target_actor = Actor(units=cfg.Actor.units, n_actions=action_space.shape[0], stddev=cfg.Actor.stddev) # Target Actor und Critic initialisieren
+        self.target_critic = Critic(state_units=cfg.Critic.state_units,action_units=cfg.Critic.action_units, units=cfg.Critic.units, stddev=cfg.Critic.stddev)
 
-        self.target_actor = Actor(n_actions=action_space.shape[0]) # Target Actor und Critic initialisieren
-        self.target_critic = Critic()
-
-        self.actor_optimizer = tf.keras.optimizers.Adam(learning_rate=0.0001) # Optimizer für Actor und Critic
-        self.critic_optimizer = tf.keras.optimizers.Adam(learning_rate=0.001)
+        self.actor_optimizer = tf.keras.optimizers.Adam(learning_rate=cfg.DDPGAgent.learning_rate) # Optimizer für Actor und Critic
+        self.critic_optimizer = tf.keras.optimizers.Adam(learning_rate=cfg.DDPGAgent.learning_rate)
 
         self.noise = OUActionNoise(mean=np.zeros(np.array(self.action_space.sample()).shape),
-                                   std_deviation=float(0.2) * np.ones(1)) # Noise für die Exploration
+                                   std_deviation=float(cfg.OUNoise.sigma) * np.ones(1),theta=cfg.OUNoise.theta, dt=cfg.OUNoise.dt) # Noise für die Exploration
 
         self._init_networks(observation_shape)
+
+    def setNoise(self, sigma, theta, dt):
+        self.noise = OUActionNoise(mean=np.zeros(np.array(self.action_space.sample()).shape),std_deviation=float(sigma)*np.ones(1),theta=theta,dt=dt)
 
     def _init_networks(self, observation_shape):
         initial_state = np.zeros([1, observation_shape])
@@ -46,12 +50,11 @@ class DDPGAgent:
 
     def act(self, observation, explore=True, random_action=False):
         if random_action or np.random.uniform(0, 1) < self.epsilon:
-            a = self.action_space.sample() # explore with random action
+            a = self.action_space.sample()
         else:
             a = self.actor(observation).numpy()[:, 0] # sample action from policy
             if explore:
                 a = np.squeeze([action + self.noise() for action in a]) # add noise for exploration
-                # former code:      a += self.noise() # add noise for exploration
         a = np.clip(a, self.action_space.low, self.action_space.high) # setzt alle Wert größer als high auf high und alle kleiner als low auf low
         return a
 
