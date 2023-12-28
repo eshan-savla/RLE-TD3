@@ -12,7 +12,7 @@ def main():
         tf.config.experimental.set_memory_growth(device, True)
 
     replay_buffer = ReplayBuffer()
-    env = gym.make('Pendulum-v1', render_mode='rgb_array')
+    env = gym.make('Ant-v3', ctrl_cost_weight=0.1, xml_file = "./models/ant/ant.xml", render_mode='human')
     agent = DDPGAgent(env.action_space, env.observation_space.shape[0])
     for i in range(1001):
         obs, _ = env.reset()
@@ -36,7 +36,9 @@ def main():
         for _ in range(128):
             s_states, s_actions, s_rewards, s_next_states, s_dones = replay_buffer.sample(64)
             actor_l, critic_l = agent.learn(s_states, s_actions, s_rewards, s_next_states, s_dones)
-            ep_actor_loss += actor_l
+            
+            # sum up losses for the experience batch
+            ep_actor_loss += actor_l # ep = episode
             ep_critic_loss += critic_l
             
         if i % 25 == 0:

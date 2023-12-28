@@ -49,7 +49,7 @@ class TD3Agent:
         self.target_critic_2.set_weights(self.critic_2.get_weights())
 
     def compute_target_q(self, rewards, next_states, dones):
-        noise = np.clip(np.random.normal(0, self.policy_noise, size=self.action_space.shape), -self.noise_clip, self.noise_clip)
+        noise = np.clip(np.random.normal(0, self.policy_noise, size=self.action_space.shape), -self.noise_clip, self.noise_clip)     #generates random noise from normal distribution with mean 0 and standard deviation self.policy_noise. Parameter defines noise array which matches shape of action space // clip clips generated noise array to ensure values are in the range defined by noise clip
         next_action = np.clip(self.target_actor(next_states) + noise, self.action_space.low, self.action_space.high)
 
         critic_input_1 = {'action': next_action, 'state': next_states}
