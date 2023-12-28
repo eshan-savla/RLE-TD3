@@ -1,6 +1,9 @@
 from td3_config import cfg
 from hydra.utils import instantiate
+import matplotlib.pyplot as plt
+import pandas as pd
 import os
+
 import gymnasium as gym
 import numpy as np
 import tensorflow as tf
@@ -17,6 +20,10 @@ def main():
     replay_buffer = instantiate(cfg.ReplayBuffer)
     env = gym.make('Ant-v3', ctrl_cost_weight=0.1, xml_file = "../models/ant.xml", render_mode='rgb_array')
     agent = TD3Agent(env.action_space, env.observation_space.shape[0],gamma=cfg.TD3Agent.gamma,tau=cfg.TD3Agent.tau, epsilon=cfg.TD3Agent.epsilon, noise_clip=cfg.TD3Agent.noise_clip, policy_freq=cfg.TD3Agent.policy_freq)
+    returns = list()
+    actor_losses = list()
+    critic1_losses = list() 
+    critic2_losses = list()
     for i in range(cfg.Training.epochs):
         obs, _ = env.reset()
         # gather experience
@@ -47,10 +54,21 @@ def main():
             avg_return = compute_avg_return(env, agent, num_episodes=2, render=False)
             print(
                 f'epoch {i}, actor loss {ep_actor_loss / steps}, critic 1 loss {ep_critic1_loss / steps}, critic 2 loss {ep_critic2_loss/steps} , avg return {avg_return}')
-            agent.save_weights()
+            agent.save_weights()    
+        returns.append(avg_return)
+        actor_losses.append(tf.get_static_value(ep_actor_loss) / steps)
+        critic1_losses.append(tf.get_static_value(ep_critic1_loss) / steps)
+        critic2_losses.append(tf.get_static_value(ep_critic2_loss) / steps)
 
-    compute_avg_return(env, agent, num_episodes=10, render=True)
+    agent.save_weights()
+    compute_avg_return(env, agent, num_episodes=10, render=False)
+    df = pd.DataFrame({'returns': returns, 'actor_losses': actor_losses, 'critic1_losses': critic1_losses, 'critic2_losses': critic2_losses})
+    (df.drop("returns", axis=1, inplace=False)).plot(title='TD3 losses', figsize=(10, 5)).get_figure().savefig('../evals/losses_' + (agent.save_dir.split('/'))[-2] + '.png')
+    returns_df = pd.DataFrame({'returns': returns})
+    returns_df.plot(title='TD3 returns', figsize=(10, 5)).get_figure().savefig('../evals/returns_' + (agent.save_dir.split('/'))[-2] + '.png')
+    df.to_csv('../evals/results_' + agent.save_dir.split('/')[-2] + '.csv', index=True)
     env.close()
 
+    
 if __name__ == "__main__":
     main()
