@@ -50,7 +50,7 @@ class DDPGAgent:
 
     def act(self, observation, explore=True, random_action=False):
         if random_action or np.random.uniform(0, 1) < self.epsilon:
-            a = self.action_space.sample() # explore with random action
+            a = self.action_space.sample()
         else:
             a = self.actor(observation).numpy()[:, 0] # sample action from policy
             if explore:

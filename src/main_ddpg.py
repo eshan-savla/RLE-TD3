@@ -14,7 +14,6 @@ def main():
     physical_devices = tf.config.list_physical_devices('GPU') 
     for device in physical_devices:
         tf.config.experimental.set_memory_growth(device, True)
-
     replay_buffer = instantiate(cfg.ReplayBuffer)
     env = gym.make('Ant-v3', ctrl_cost_weight=0.1, xml_file = "./models/ant.xml", render_mode='human')
     agent = DDPGAgent(env.action_space, env.observation_space.shape[0],gamma=cfg.DDPGAgent.gamma,tau=cfg.DDPGAgent.tau, epsilon=cfg.DDPGAgent.epsilon)

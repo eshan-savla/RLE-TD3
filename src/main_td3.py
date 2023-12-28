@@ -46,8 +46,7 @@ def main():
         if i % 25 == 0:
             avg_return = compute_avg_return(env, agent, num_episodes=2, render=False)
             print(
-                f'epoch {i}, actor loss {ep_actor_loss / steps}, critic 1 loss {ep_critic1_loss / steps}, critic 2 loss {ep_critic2_loss/steps} , avg return {avg_return}')
-        
+                f'epoch {i}, actor loss {ep_actor_loss / steps}, critic 1 loss {ep_critic1_loss / steps}, critic 2 loss {ep_critic2_loss/steps} , avg return {avg_return}')        
     compute_avg_return(env, agent, num_episodes=10, render=True)
     env.close()
 

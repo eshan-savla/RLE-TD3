@@ -100,13 +100,9 @@ class TD3Agent:
 
         if step % self.policy_freq == 0:
             actor_grads, self.previous_actor_loss = self.get_actor_grads(states)
-            shape = len(actor_grads[0])
-            shape2 = actor_grads[1].shape
-            variables_shape = self.actor.trainable_variables
-            grads = zip(actor_grads, self.actor.trainable_variables)
-            self.actor_optimizer.apply_gradients(grads)
+            self.actor_optimizer.apply_gradients(zip(actor_grads, self.actor.trainable_variables))
             self.target_update()
-
+          
         return self.previous_actor_loss, critics1_l, critics2_l
     
     def target_update(self):
