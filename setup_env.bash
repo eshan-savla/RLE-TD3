@@ -28,5 +28,7 @@ else
     echo "activated venv"
     python3 -m pip install --upgrade pip
     python3 -m pip install -r $PWD/requirements.txt
+    python3 -m pip install ipython
+    python3 -m pip install ipykernel
     ipython kernel install --user --name=venv
 fi
