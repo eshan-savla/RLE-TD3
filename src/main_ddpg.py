@@ -40,7 +40,9 @@ def main():
         for _ in range(cfg.Training.batch_size):
             s_states, s_actions, s_rewards, s_next_states, s_dones = replay_buffer.sample(cfg.Training.sample_size, cfg.Training.unbalance)
             actor_l, critic_l = agent.learn(s_states, s_actions, s_rewards, s_next_states, s_dones)
-            ep_actor_loss += actor_l
+            
+            # sum up losses for the experience batch
+            ep_actor_loss += actor_l # ep = episode
             ep_critic_loss += critic_l
             
         if i % 25 == 0:

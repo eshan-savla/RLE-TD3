@@ -52,7 +52,6 @@ class TD3Agent:
 
     def compute_target_q(self, rewards, next_states, dones):
         next_action = np.clip(self.target_actor(next_states) + np.clip(self.noise(), -self.noise_clip, self.noise_clip), self.action_space.low, self.action_space.high)
-
         critic_input_1 = {'action': next_action, 'state': next_states}
         critic_input_2 = {'action': next_action, 'state': next_states}
         next_q1 = self.target_critic_1(critic_input_1)
