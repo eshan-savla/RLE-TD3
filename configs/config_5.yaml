@@ -1,4 +1,4 @@
-# ground truth
+# change from ground truth: exploration noise from 0.1 -> 0.2
 ReplayBuffer:
   _target_: replay_buffer.ReplayBuffer
   capacity: 100000
