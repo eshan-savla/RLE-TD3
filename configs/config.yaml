@@ -3,7 +3,7 @@ ReplayBuffer:
   capacity: 100000
 
 Training:
-  epochs: 5
+  epochs: 1001
   max_steps: 200
   batch_size: 128
   sample_size: 64
