@@ -61,7 +61,8 @@ class TD3Agent:
         target_q = rewards + (1 - dones) * next_q * self.gamma
         return target_q
 
-    def get_critic_grads(self, states, actions, target_qs, critic):
+    @staticmethod
+    def get_critic_grads(states, actions, target_qs, critic):
         with tf.GradientTape() as tape: 
             critic_input = {'action': actions, 'state': states} # kommt aus Replay Buffer
             qs = critic(critic_input) # forward pass mit den Actions und States gibt die Q-Werte aus critic nicht target_critic
