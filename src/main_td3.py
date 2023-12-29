@@ -28,7 +28,9 @@ def main():
     for i in range(cfg.Training.epochs):
         obs, _ = env.reset()
         # gather experience
-        agent.noise.reset()
+        agent.noise_output_net.reset()
+        agent.noise_target_net.reset()
+
         ep_actor_loss = 0
         ep_critic1_loss = 0
         ep_critic2_loss = 0

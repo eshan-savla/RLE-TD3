@@ -20,7 +20,13 @@ Critic:
   units: [150,]
   stddev: 0.00005
 
-OUNoise:
+OUNoiseOutput:
+  _partial_: true
+  theta: 0.15
+  sigma: 0.2
+  dt: 0.01
+
+OUNoiseTarget:
   _partial_: true
   theta: 0.15
   sigma: 0.2

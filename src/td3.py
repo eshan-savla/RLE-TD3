@@ -38,8 +38,11 @@ class TD3Agent:
         self.critic_optimizer_1 = tf.keras.optimizers.Adam(learning_rate=cfg.TD3Agent.learning_rate)
         self.critic_optimizer_2 = tf.keras.optimizers.Adam(learning_rate=cfg.TD3Agent.learning_rate)
 
-        self.noise = OUActionNoise(mean=np.zeros(np.array(self.action_space.sample()).shape),
-                                   std_deviation=float(cfg.OUNoise.sigma) * np.ones(1),theta=cfg.OUNoise.theta, dt=cfg.OUNoise.dt)
+        self.noise_output_net = OUActionNoise(mean=np.zeros(np.array(self.action_space.sample()).shape),
+                                   std_deviation=float(cfg.OUNoiseOutput.sigma) * np.ones(1),theta=cfg.OUNoiseOutput.theta, dt=cfg.OUNoiseOutput.dt)
+        
+        self.noise_target_net = OUActionNoise(mean=np.zeros(np.array(self.action_space.sample()).shape),
+                            std_deviation=float(cfg.OUNoiseTarget.sigma) * np.ones(1),theta=cfg.OUNoiseTarget.theta, dt=cfg.OUNoiseTarget.dt)
 
         self._init_networks(observation_shape)
 
@@ -74,7 +77,7 @@ class TD3Agent:
         Returns:
             target_q: desired/ target estimate of q-value(cumulative reward) for a given state-action pair
         """
-        next_action = np.clip(self.target_actor(next_states) + np.clip(self.noise(), -self.noise_clip, self.noise_clip), self.action_space.low, self.action_space.high)
+        next_action = np.clip(self.target_actor(next_states) + np.clip(self.noise_target_net(), -self.noise_clip, self.noise_clip), self.action_space.low, self.action_space.high)
 
         #Both critic networks need to be used to compute the q-value to reduce the overestimation bias by using the the minimum of both q-values
         critic_input_1 = {'action': next_action, 'state': next_states}
@@ -138,7 +141,7 @@ class TD3Agent:
         else:
             a = self.actor(observation).numpy()[:, 0] # sample action from policy
             if explore:
-                a = np.squeeze([action + self.noise() for action in a]) # add noise for exploration
+                a = np.squeeze([action + self.noise_output_net() for action in a]) # add noise for exploration
           
         a = np.clip(a, self.action_space.low, self.action_space.high) # setzt alle Wert größer als high auf high und alle kleiner als low auf low
         return a
