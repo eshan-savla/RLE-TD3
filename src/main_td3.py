@@ -3,6 +3,7 @@ from hydra.utils import instantiate
 import matplotlib.pyplot as plt
 import pandas as pd
 import os
+import timeit
 
 import gymnasium as gym
 import numpy as np
@@ -18,7 +19,7 @@ def main():
         tf.config.experimental.set_memory_growth(device, True)
     os.chdir(os.path.dirname(os.path.abspath(__file__)))
     replay_buffer = instantiate(cfg.ReplayBuffer)
-    env = gym.make('Ant-v3', ctrl_cost_weight=0.1, xml_file = "../models/ant.xml", render_mode='human')
+    env = gym.make('Ant-v3', ctrl_cost_weight=0.1, xml_file = "../models/ant.xml", render_mode='rgb_array') #human 
     agent = TD3Agent(env.action_space, env.observation_space.shape[0],gamma=cfg.TD3Agent.gamma,tau=cfg.TD3Agent.tau, epsilon=cfg.TD3Agent.epsilon, noise_clip=cfg.TD3Agent.noise_clip, policy_freq=cfg.TD3Agent.policy_freq)
     returns = list()
     actor_losses = list()
@@ -62,6 +63,8 @@ def main():
     agent.save_weights()
     compute_avg_return(env, agent, num_episodes=10, render=False)
     df = pd.DataFrame({'returns': returns, 'actor_losses': actor_losses, 'critic1_losses': critic1_losses, 'critic2_losses': critic2_losses})
+    
+    os.makedirs('../evals/', exist_ok=True)     # create folder if not existing yet
     (df.drop("returns", axis=1, inplace=False)).plot(title='TD3 losses', figsize=(10, 5)).get_figure().savefig('../evals/losses_' + (agent.save_dir.split('/'))[-2] + '.png')
     returns_df = pd.DataFrame({'returns': returns})
     returns_df.plot(title='TD3 returns', figsize=(10, 5)).get_figure().savefig('../evals/returns_' + (agent.save_dir.split('/'))[-2] + '.png')
@@ -70,4 +73,6 @@ def main():
 
     
 if __name__ == "__main__":
-    main()
+    elapsed_time = timeit.timeit(main, number=1)
+    minutes, seconds = divmod(elapsed_time, 60)
+    print(f"The main function ran for {int(minutes)} minutes and {seconds:.2f} seconds.")
