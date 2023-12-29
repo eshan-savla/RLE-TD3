@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import os
 import timeit
+from tqdm import tqdm
 
 import gymnasium as gym
 import numpy as np
@@ -25,7 +26,7 @@ def main():
     actor_losses = list()
     critic1_losses = list() 
     critic2_losses = list()
-    for i in range(cfg.Training.epochs):
+    for i in tqdm(range(cfg.Training.epochs)):
         obs, _ = env.reset()
         # gather experience
         agent.noise_output_net.reset()
