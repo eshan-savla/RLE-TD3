@@ -64,7 +64,6 @@ def main():
         critic2_losses.append(tf.get_static_value(ep_critic2_loss) / steps)
 
     agent.save_weights()
-    compute_avg_return(env, agent, num_episodes=10, render=False)
     df = pd.DataFrame({'returns': returns, 'actor_losses': actor_losses, 'critic1_losses': critic1_losses, 'critic2_losses': critic2_losses})
     
     os.makedirs('../evals/', exist_ok=True)     # create folder if not existing yet
@@ -78,6 +77,7 @@ def main():
     plot_returns.get_figure().savefig('../evals/returns_' + (agent.save_dir.split('/'))[-2] + '.png')
     
     df.to_csv('../evals/results_' + agent.save_dir.split('/')[-2] + '.csv', index=True)
+    compute_avg_return(env, agent, num_episodes=10, render=False)
     env.close()
 
     
