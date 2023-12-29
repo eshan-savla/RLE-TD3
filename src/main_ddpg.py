@@ -1,3 +1,5 @@
+import pandas as pd
+import os
 from ddpg_config import cfg
 from hydra.utils import instantiate
 import gymnasium as gym
@@ -7,6 +9,7 @@ import tensorflow_addons as tfa
 from ddpg import DDPGAgent
 from replay_buffer import ReplayBuffer
 from functions import compute_avg_return
+from tqdm import tqdm
 
 
 
@@ -15,10 +18,13 @@ def main():
     for device in physical_devices:
         tf.config.experimental.set_memory_growth(device, True)
     replay_buffer = instantiate(cfg.ReplayBuffer)
-    env = gym.make('Ant-v3', ctrl_cost_weight=0.1, xml_file = "./models/ant.xml", render_mode='human')
+    env = gym.make('Ant-v3', ctrl_cost_weight=0.1, xml_file = "./models/ant.xml", render_mode='rgb_array')
     agent = DDPGAgent(env.action_space, env.observation_space.shape[0],gamma=cfg.DDPGAgent.gamma,tau=cfg.DDPGAgent.tau, epsilon=cfg.DDPGAgent.epsilon)
     # agent.setNoise(cfg.noise.sigma, cfg.noise.theta, cfg.noise.dt)
-    for i in range(cfg.Training.epochs):
+    returns = list()
+    actor_losses = list()
+    critic_losses = list()
+    for i in tqdm(range(cfg.Training.epochs)):
         obs, _ = env.reset()
         # gather experience
         agent.noise.reset()
@@ -27,7 +33,6 @@ def main():
         steps = 0
         for j in range(cfg.Training.max_steps):
             steps += 1
-            env.render()
             action = agent.act(np.array([obs]), random_action=(i < 1)) # i < 1 weil bei ersten Epoche keine Policy vorhanden ist
             # execute action
             new_obs, r, done, _, _ = env.step(action)
@@ -49,8 +54,25 @@ def main():
             avg_return = compute_avg_return(env, agent, num_episodes=2, render=False)
             print(
                 f'epoch {i}, actor loss {ep_actor_loss / steps}, critic loss {ep_critic_loss / steps} , avg return {avg_return}')
-        
+            agent.save_weights()
+        returns.append(avg_return)
+        actor_losses.append(tf.get_static_value(ep_actor_loss) / steps)
+        critic_losses.append(tf.get_static_value(ep_critic_loss) / steps)
+    agent.save_weights()    
     compute_avg_return(env, agent, num_episodes=10, render=True)
+    df = pd.DataFrame({'returns': returns, 'actor_losses': actor_losses, 'critic_losses': critic_losses})
+    
+    os.makedirs('../evals/', exist_ok=True)     # create folder if not existing yet
+    plot_losses = df.drop("returns", axis=1, inplace=False).plot(title='DDPG losses', figsize=(10, 5))
+    plot_losses.set(xlabel='Training steps', ylabel='Loss')
+    plot_losses.get_figure().savefig('../evals/ddpg_losses_' + (agent.save_dir.split('/'))[-2] + '.png')
+
+    returns_df = pd.DataFrame({'returns': returns})
+    plot_returns = returns_df.plot(title='DDPG returns', figsize=(10, 5))
+    plot_returns.set(xlabel='Training steps', ylabel='Returns')
+    plot_returns.get_figure().savefig('../evals/ddpg_returns_' + (agent.save_dir.split('/'))[-2] + '.png')
+    
+    df.to_csv('../evals/ddpg_results_' + agent.save_dir.split('/')[-2] + '.csv', index=True)
     env.close()
 
 if __name__ == "__main__":

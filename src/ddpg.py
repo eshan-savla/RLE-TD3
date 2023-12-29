@@ -1,5 +1,6 @@
 from ddpg_config import cfg
-
+from datetime import datetime
+import os
 import tensorflow as tf
 import numpy as np
 from critic import Critic
@@ -12,6 +13,8 @@ class DDPGAgent:
         self.tau = tau  # target network weight adaptation
         self.gamma = gamma  # discount factor
         self.epsilon = epsilon
+        self.save_dir = None
+        
         self.actor = Actor(units=cfg.Actor.units, n_actions=action_space.shape[0], stddev=cfg.Actor.stddev) # Actor und Critic initialisieren
         self.critic = Critic(state_units=cfg.Critic.state_units,action_units=cfg.Critic.action_units, units=cfg.Critic.units, stddev=cfg.Critic.stddev)
 
@@ -22,7 +25,7 @@ class DDPGAgent:
         self.critic_optimizer = tf.keras.optimizers.Adam(learning_rate=cfg.DDPGAgent.learning_rate)
 
         self.noise = OUActionNoise(mean=np.zeros(np.array(self.action_space.sample()).shape),
-                                   std_deviation=float(cfg.OUNoise.sigma) * np.ones(1),theta=cfg.OUNoise.theta, dt=cfg.OUNoise.dt) # Noise für die Exploration
+                                   std_deviation=float(cfg.OUNoiseOutput.sigma) * np.ones(1),theta=cfg.OUNoiseOutput.theta, dt=cfg.OUNoiseOutput.dt) # Noise für die Exploration
 
         self._init_networks(observation_shape)
 
@@ -98,3 +101,20 @@ class DDPGAgent:
     def target_update(self):
         DDPGAgent.update_target(self.target_critic, self.critic, self.tau)
         DDPGAgent.update_target(self.target_actor, self.actor, self.tau)
+
+    def save_weights(self):
+        if self.save_dir is None:
+            now = datetime.now()
+            self.save_dir = now.strftime("%Y-%m-%d_%H-%M")
+            os.makedirs(cfg.TD3Agent.weights_path + self.save_dir, exist_ok=True)
+            self.save_dir = cfg.TD3Agent.weights_path + self.save_dir + "/"
+        
+        np.save(self.save_dir + "ddpg_actor_weights", self.actor.get_weights()[0])
+        np.save(self.save_dir + "ddpg_actor_biases", self.actor.get_weights()[1])
+        np.save(self.save_dir + "ddpg_critic_weights", self.critic.get_weights()[0])
+        np.save(self.save_dir + "ddpg_critic_biases", self.critic.get_weights()[1])
+
+        np.save(self.save_dir + "ddpg_target_actor_weights", self.target_actor.get_weights()[0])
+        np.save(self.save_dir + "ddpg_target_actor_biases", self.target_actor.get_weights()[1])
+        np.save(self.save_dir + "ddpg_target_critic_weights", self.target_critic.get_weights()[0])
+        np.save(self.save_dir + "ddpg_target_critic_biases", self.target_critic.get_weights()[1])
