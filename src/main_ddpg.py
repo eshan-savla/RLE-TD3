@@ -61,7 +61,6 @@ def main():
                 evals_dir = '../evals/'+ agent.save_dir.split('/')[-2] + "/"
                 os.makedirs(evals_dir, exist_ok=True)   # create folder if not existing yet
             df = pd.DataFrame({'returns': returns, 'actor_losses': actor_losses, 'critic_losses': critic_losses})
-            os.makedirs(evals_dir, exist_ok=True)   # create folder if not existing yet
             plot_losses = df.drop("returns", axis=1, inplace=False).plot(title='DDPG losses', figsize=(10, 5))
             plot_losses.set(xlabel='Epochs', ylabel='Loss')
             plot_losses.get_figure().savefig(evals_dir+'ddpg_losses.png')
