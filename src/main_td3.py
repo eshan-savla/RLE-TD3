@@ -63,6 +63,7 @@ def main():
             if evals_dir is None:
                 evals_dir = '../evals/'+ agent.save_dir.split('/')[-2] + "/"
                 os.makedirs(evals_dir, exist_ok=True)   # create folder if not existing yet
+            df = pd.DataFrame({'returns': returns, 'actor_losses': actor_losses, 'critic1_losses': critic1_losses, 'critic2_losses': critic2_losses})
             plot_losses = df.drop("returns", axis=1, inplace=False).plot(title='TD3 losses', figsize=(10, 5))
             plot_losses.set(xlabel='Epochs', ylabel='Loss')
             plot_losses.get_figure().savefig(evals_dir+'losses_td3.png')
@@ -80,7 +81,6 @@ def main():
         critic2_losses.append(tf.get_static_value(ep_critic2_loss) / steps)
 
     agent.save_weights()
-    df = pd.DataFrame({'returns': returns, 'actor_losses': actor_losses, 'critic1_losses': critic1_losses, 'critic2_losses': critic2_losses})
     
     
     compute_avg_return(env, agent, num_episodes=10, max_steps=cfg.Training.max_steps, render=False)
