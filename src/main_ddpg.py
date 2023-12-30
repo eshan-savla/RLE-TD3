@@ -25,6 +25,7 @@ def main():
     returns = list()
     actor_losses = list()
     critic_losses = list()
+    evals_dir = None
     for i in tqdm(range(cfg.Training.epochs)):
         obs, _ = env.reset()
         # gather experience
@@ -55,23 +56,25 @@ def main():
             print(
                 f'epoch {i}, actor loss {ep_actor_loss / steps}, critic loss {ep_critic_loss / steps} , avg return {avg_return}')
             agent.save_weights()
+            if evals_dir is None:
+                evals_dir = '../evals/'+ agent.save_dir.split('/')[-2] + "/"
+                os.makedirs(evals_dir, exist_ok=True)   # create folder if not existing yet
+            df = pd.DataFrame({'returns': returns, 'actor_losses': actor_losses, 'critic_losses': critic_losses})
+            os.makedirs(evals_dir, exist_ok=True)   # create folder if not existing yet
+            plot_losses = df.drop("returns", axis=1, inplace=False).plot(title='DDPG losses', figsize=(10, 5))
+            plot_losses.set(xlabel='Epochs', ylabel='Loss')
+            plot_losses.get_figure().savefig(evals_dir+'ddpg_losses.png')
+
+            returns_df = pd.DataFrame({'returns': returns})
+            plot_returns = returns_df.plot(title='DDPG returns', figsize=(10, 5))
+            plot_returns.set(xlabel='Epochs', ylabel='Returns')
+            plot_returns.get_figure().savefig(evals_dir+'ddpg_returns.png')
+            
+            df.to_csv(evals_dir+'ddpg_results.csv', index=True)
         returns.append(avg_return)
         actor_losses.append(tf.get_static_value(ep_actor_loss) / steps)
         critic_losses.append(tf.get_static_value(ep_critic_loss) / steps)
     agent.save_weights()    
-    df = pd.DataFrame({'returns': returns, 'actor_losses': actor_losses, 'critic_losses': critic_losses})
-    evals_dir = '../evals/'+ agent.save_dir.split('/')[-2] + "/"
-    os.makedirs(evals_dir, exist_ok=True)   # create folder if not existing yet
-    plot_losses = df.drop("returns", axis=1, inplace=False).plot(title='DDPG losses', figsize=(10, 5))
-    plot_losses.set(xlabel='Epochs', ylabel='Loss')
-    plot_losses.get_figure().savefig(evals_dir+'ddpg_losses.png')
-
-    returns_df = pd.DataFrame({'returns': returns})
-    plot_returns = returns_df.plot(title='DDPG returns', figsize=(10, 5))
-    plot_returns.set(xlabel='Epochs', ylabel='Returns')
-    plot_returns.get_figure().savefig(evals_dir+'ddpg_returns.png')
-    
-    df.to_csv(evals_dir+'ddpg_results.csv', index=True)
     compute_avg_return(env, agent, num_episodes=10, max_steps=cfg.Training.max_steps, render=True)
 
     env.close()

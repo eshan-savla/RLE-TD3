@@ -26,6 +26,7 @@ def main():
     actor_losses = list()
     critic1_losses = list() 
     critic2_losses = list()
+    evals_dir = None
     for i in tqdm(range(cfg.Training.epochs)):
         obs, _ = env.reset()
         # gather experience
@@ -57,7 +58,21 @@ def main():
             avg_return = compute_avg_return(env, agent, num_episodes=2, max_steps=cfg.Training.max_steps, render=False)
             print(
                 f'epoch {i}, actor loss {ep_actor_loss / steps}, critic 1 loss {ep_critic1_loss / steps}, critic 2 loss {ep_critic2_loss/steps} , avg return {avg_return}')
-            agent.save_weights()    
+            agent.save_weights()
+            if evals_dir is None:
+                evals_dir = '../evals/'+ agent.save_dir.split('/')[-2] + "/"
+                os.makedirs(evals_dir, exist_ok=True)   # create folder if not existing yet
+            plot_losses = df.drop("returns", axis=1, inplace=False).plot(title='TD3 losses', figsize=(10, 5))
+            plot_losses.set(xlabel='Epochs', ylabel='Loss')
+            plot_losses.get_figure().savefig(evals_dir+'losses_td3.png')
+
+            returns_df = pd.DataFrame({'returns': returns})
+            plot_returns = returns_df.plot(title='TD3 returns', figsize=(10, 5))
+            plot_returns.set(xlabel='Epochs', ylabel='Returns')
+            plot_returns.get_figure().savefig(evals_dir+'returns_td3.png')
+    
+            df.to_csv(evals_dir+'td3_results.csv', index=True) 
+
         returns.append(avg_return)
         actor_losses.append(tf.get_static_value(ep_actor_loss) / steps)
         critic1_losses.append(tf.get_static_value(ep_critic1_loss) / steps)
@@ -66,18 +81,7 @@ def main():
     agent.save_weights()
     df = pd.DataFrame({'returns': returns, 'actor_losses': actor_losses, 'critic1_losses': critic1_losses, 'critic2_losses': critic2_losses})
     
-    evals_dir = '../evals/'+ agent.save_dir.split('/')[-2] + "/"
-    os.makedirs(evals_dir, exist_ok=True)   # create folder if not existing yet
-    plot_losses = df.drop("returns", axis=1, inplace=False).plot(title='TD3 losses', figsize=(10, 5))
-    plot_losses.set(xlabel='Epochs', ylabel='Loss')
-    plot_losses.get_figure().savefig(evals_dir+'losses_td3.png')
-
-    returns_df = pd.DataFrame({'returns': returns})
-    plot_returns = returns_df.plot(title='TD3 returns', figsize=(10, 5))
-    plot_returns.set(xlabel='Epochs', ylabel='Returns')
-    plot_returns.get_figure().savefig(evals_dir+'returns_td3.png')
     
-    df.to_csv(evals_dir+'td3_results.csv', index=True)
     compute_avg_return(env, agent, num_episodes=10, max_steps=cfg.Training.max_steps, render=False)
     env.close()
 
