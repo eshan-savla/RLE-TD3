@@ -66,17 +66,18 @@ def main():
     agent.save_weights()
     df = pd.DataFrame({'returns': returns, 'actor_losses': actor_losses, 'critic1_losses': critic1_losses, 'critic2_losses': critic2_losses})
     
-    os.makedirs('../evals/', exist_ok=True)     # create folder if not existing yet
+    evals_dir = '../evals/'+ agent.save_dir.split('/')[-2] + "/"
+    os.makedirs(evals_dir, exist_ok=True)   # create folder if not existing yet
     plot_losses = df.drop("returns", axis=1, inplace=False).plot(title='TD3 losses', figsize=(10, 5))
-    plot_losses.set(xlabel='Training steps', ylabel='Loss')
-    plot_losses.get_figure().savefig('../evals/losses_' + (agent.save_dir.split('/'))[-2] + '.png')
+    plot_losses.set(xlabel='Epochs', ylabel='Loss')
+    plot_losses.get_figure().savefig(evals_dir+'losses_td3.png')
 
     returns_df = pd.DataFrame({'returns': returns})
     plot_returns = returns_df.plot(title='TD3 returns', figsize=(10, 5))
-    plot_returns.set(xlabel='Training steps', ylabel='Returns')
-    plot_returns.get_figure().savefig('../evals/returns_' + (agent.save_dir.split('/'))[-2] + '.png')
+    plot_returns.set(xlabel='Epochs', ylabel='Returns')
+    plot_returns.get_figure().savefig(evals_dir+'returns_td3.png')
     
-    df.to_csv('../evals/results_' + agent.save_dir.split('/')[-2] + '.csv', index=True)
+    df.to_csv(evals_dir+'td3_results.csv', index=True)
     compute_avg_return(env, agent, num_episodes=10, max_steps=cfg.Training.max_steps, render=False)
     env.close()
 
