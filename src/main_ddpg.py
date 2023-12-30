@@ -17,8 +17,9 @@ def main():
     physical_devices = tf.config.list_physical_devices('GPU') 
     for device in physical_devices:
         tf.config.experimental.set_memory_growth(device, True)
+    os.chdir(os.path.dirname(os.path.abspath(__file__)))
     replay_buffer = instantiate(cfg.ReplayBuffer)
-    env = gym.make('Ant-v3', ctrl_cost_weight=0.1, xml_file = "./models/ant.xml", render_mode='rgb_array')
+    env = gym.make('Ant-v3') #, ctrl_cost_weight=0.1, xml_file = "../models/ant.xml", render_mode='human'
     agent = DDPGAgent(env.action_space, env.observation_space.shape[0],gamma=cfg.DDPGAgent.gamma,tau=cfg.DDPGAgent.tau, epsilon=cfg.DDPGAgent.epsilon)
     # agent.setNoise(cfg.noise.sigma, cfg.noise.theta, cfg.noise.dt)
     returns = list()
@@ -40,7 +41,6 @@ def main():
             obs = new_obs
             if done:
                 break
-                
         # Learn from the experiences in the replay buffer.
         for _ in range(cfg.Training.batch_size):
             s_states, s_actions, s_rewards, s_next_states, s_dones = replay_buffer.sample(cfg.Training.sample_size, cfg.Training.unbalance)
@@ -51,7 +51,7 @@ def main():
             ep_critic_loss += critic_l
             
         if i % 25 == 0:
-            avg_return = compute_avg_return(env, agent, num_episodes=2, render=False)
+            avg_return = compute_avg_return(env, agent, num_episodes=2, max_steps=cfg.Training.max_steps, render=False)
             print(
                 f'epoch {i}, actor loss {ep_actor_loss / steps}, critic loss {ep_critic_loss / steps} , avg return {avg_return}')
             agent.save_weights()
@@ -72,7 +72,7 @@ def main():
     plot_returns.get_figure().savefig('../evals/ddpg_returns_' + (agent.save_dir.split('/'))[-2] + '.png')
     
     df.to_csv('../evals/ddpg_results_' + agent.save_dir.split('/')[-2] + '.csv', index=True)
-    compute_avg_return(env, agent, num_episodes=10, render=True)
+    compute_avg_return(env, agent, num_episodes=10, max_steps=cfg.Training.max_steps, render=True)
 
     env.close()
 
