@@ -5,6 +5,7 @@ import pandas as pd
 import os
 import timeit
 from tqdm import tqdm
+import matplotlib.pyplot as plt
 
 import gymnasium as gym
 import numpy as np
@@ -70,7 +71,7 @@ def main():
             plot_returns = returns_df.plot(title='TD3 returns', figsize=(10, 5))
             plot_returns.set(xlabel='Epochs', ylabel='Returns')
             plot_returns.get_figure().savefig(evals_dir+'returns_td3.png')
-    
+            plt.close('all')
             df.to_csv(evals_dir+'td3_results.csv', index=True) 
 
         returns.append(avg_return)

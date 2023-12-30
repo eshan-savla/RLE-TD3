@@ -1,4 +1,5 @@
 import pandas as pd
+import matplotlib.pyplot as plt
 import os
 from ddpg_config import cfg
 from hydra.utils import instantiate
@@ -69,14 +70,12 @@ def main():
             plot_returns = returns_df.plot(title='DDPG returns', figsize=(10, 5))
             plot_returns.set(xlabel='Epochs', ylabel='Returns')
             plot_returns.get_figure().savefig(evals_dir+'ddpg_returns.png')
-            
+            plt.close('all')
             df.to_csv(evals_dir+'ddpg_results.csv', index=True)
         returns.append(avg_return)
         actor_losses.append(tf.get_static_value(ep_actor_loss) / steps)
         critic_losses.append(tf.get_static_value(ep_critic_loss) / steps)
     agent.save_weights()    
-    compute_avg_return(env, agent, num_episodes=10, max_steps=cfg.Training.max_steps, render=True)
-
     env.close()
 
 if __name__ == "__main__":
