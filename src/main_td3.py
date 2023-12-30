@@ -54,7 +54,7 @@ def main():
             ep_critic1_loss += critic1_l
             ep_critic2_loss += critic2_l
         if i % 25 == 0:
-            avg_return = compute_avg_return(env, agent, num_episodes=2, render=False)
+            avg_return = compute_avg_return(env, agent, num_episodes=2, max_steps=cfg.Training.max_steps, render=False)
             print(
                 f'epoch {i}, actor loss {ep_actor_loss / steps}, critic 1 loss {ep_critic1_loss / steps}, critic 2 loss {ep_critic2_loss/steps} , avg return {avg_return}')
             agent.save_weights()    
@@ -77,7 +77,7 @@ def main():
     plot_returns.get_figure().savefig('../evals/returns_' + (agent.save_dir.split('/'))[-2] + '.png')
     
     df.to_csv('../evals/results_' + agent.save_dir.split('/')[-2] + '.csv', index=True)
-    compute_avg_return(env, agent, num_episodes=10, render=False)
+    compute_avg_return(env, agent, num_episodes=10, max_steps=cfg.Training.max_steps, render=False)
     env.close()
 
     

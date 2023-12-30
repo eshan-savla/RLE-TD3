@@ -15,7 +15,7 @@ def compute_avg_return(env, agent, num_episodes=1, max_steps=200, render=False):
                 plt.axis('off')
                 plt.imshow(env.render())
                 plt.show()
-            action = agent.act(np.array([obs]))
+            action = agent.act(np.array([obs]),explore=False)
             obs, r, done, _, _ = env.step(action)
             episode_return += r
             steps += 1
