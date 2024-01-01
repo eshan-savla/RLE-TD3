@@ -198,28 +198,28 @@ class TD3Agent:
         np.savez(self.save_dir + "target_critic1_weights", *self.target_critic_1.get_weights())
         np.savez(self.save_dir + "target_critic2_weights", *self.target_critic_2.get_weights())
 
-    def load_weights(self, use_latest:bool=True, load_dir:str=None):
+    def load_weights(self, use_latest:bool=True, load_dir:str=None, lock_weights:bool=False):
         if use_latest:
             load_dir = os.path.join(cfg.TD3Agent.weights_path,max(os.listdir(cfg.TD3Agent.weights_path))) + "/"
-
-        if self.actor.trainable:
-            print("Actor is trainable, setting to false. This is irreversible!")
-            self.actor.trainable = False
-        if self.critic_1.trainable:
-            print("Critic 1 is trainable, setting to false. This is irreversible!")
-            self.critic_1.trainable = False
-        if self.critic_2.trainable:
-            print("Critic 2 is trainable, setting to false. This is irreversible!")
-            self.critic_2.trainable = False
-        if self.target_actor.trainable:
-            print("Target Actor is trainable, setting to false. This is irreversible!")
-            self.target_actor.trainable = False
-        if self.target_critic_1.trainable:
-            print("Target Critic 1 is trainable, setting to false. This is irreversible!")
-            self.target_critic_1.trainable = False
-        if self.target_critic_2.trainable:
-            print("Target Critic 2 is trainable, setting to false. This is irreversible!")
-            self.target_critic_2.trainable = False
+        if lock_weights:
+            if self.actor.trainable:
+                print("Actor is trainable, setting to false. This is irreversible!")
+                self.actor.trainable = False
+            if self.critic_1.trainable:
+                print("Critic 1 is trainable, setting to false. This is irreversible!")
+                self.critic_1.trainable = False
+            if self.critic_2.trainable:
+                print("Critic 2 is trainable, setting to false. This is irreversible!")
+                self.critic_2.trainable = False
+            if self.target_actor.trainable:
+                print("Target Actor is trainable, setting to false. This is irreversible!")
+                self.target_actor.trainable = False
+            if self.target_critic_1.trainable:
+                print("Target Critic 1 is trainable, setting to false. This is irreversible!")
+                self.target_critic_1.trainable = False
+            if self.target_critic_2.trainable:
+                print("Target Critic 2 is trainable, setting to false. This is irreversible!")
+                self.target_critic_2.trainable = False
 
         self.actor.set_weights(list(np.load(load_dir + "actor_weights.npz").values()))
         self.critic_1.set_weights(list(np.load(load_dir + "critic1_weights.npz").values()))
