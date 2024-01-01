@@ -1,13 +1,13 @@
 # change from ground truth: exploration noise from 0.1 -> 0.2
 ReplayBuffer:
   _target_: replay_buffer.ReplayBuffer
-  capacity: 100000
+  capacity: 1000000
 
 Training:
   epochs: 1001
   max_steps: 1000
-  batch_size: 128
-  sample_size: 64
+  batch_size: 256
+  sample_size: 128
   unbalance: 0.8
 
 Actor:

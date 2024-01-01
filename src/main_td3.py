@@ -23,6 +23,13 @@ def main():
     replay_buffer = instantiate(cfg.ReplayBuffer)
     env = gym.make('Ant-v3', ctrl_cost_weight=0.1, xml_file = "../models/ant.xml", render_mode='rgb_array') #human 
     agent = TD3Agent(env.action_space, env.observation_space.shape[0],gamma=cfg.TD3Agent.gamma,tau=cfg.TD3Agent.tau, epsilon=cfg.TD3Agent.epsilon, noise_clip=cfg.TD3Agent.noise_clip, policy_freq=cfg.TD3Agent.policy_freq)
+    if cfg.TD3Agent.use_checkpoint_timestamp:
+        agent.load_weights(use_latest=True)
+    elif not cfg.TD3Agent.use_checkpoint_timestamp:
+        pass
+    else:
+        agent.load_weights(load_dir=os.join(cfg.TD3Agent.weights_path, cfg.TD3Agent.use_checkpoint_timestamp), use_latest=False)
+
     returns = list()
     actor_losses = list()
     critic1_losses = list() 
@@ -38,7 +45,7 @@ def main():
         ep_critic1_loss = 0
         ep_critic2_loss = 0
         steps = 0
-        for j in range(cfg.Training.max_steps):
+        for j in range(cfg.Training.start,cfg.Training.max_steps):
             steps += 1
             action = agent.act(np.array([obs]), random_action=(i < 1)) # i < 1 weil bei ersten Epoche keine Policy vorhanden ist
             # execute action
@@ -82,8 +89,6 @@ def main():
 
     agent.save_weights()
     
-    
-    compute_avg_return(env, agent, num_episodes=10, max_steps=cfg.Training.max_steps, render=False)
     env.close()
 
     
