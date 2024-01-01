@@ -25,7 +25,7 @@ def main():
     agent = TD3Agent(env.action_space, env.observation_space.shape[0],gamma=cfg.TD3Agent.gamma,tau=cfg.TD3Agent.tau, epsilon=cfg.TD3Agent.epsilon, noise_clip=cfg.TD3Agent.noise_clip, policy_freq=cfg.TD3Agent.policy_freq)
     if cfg.TD3Agent.use_checkpoint_timestamp:
         agent.load_weights(use_latest=True)
-        replay_buffer.load()
+        replay_buffer.load(agent.save_dir)
     elif not cfg.TD3Agent.use_checkpoint_timestamp:
         pass
     else:
