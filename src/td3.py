@@ -201,6 +201,7 @@ class TD3Agent:
     def load_weights(self, use_latest:bool=True, load_dir:str=None, lock_weights:bool=False):
         if use_latest:
             load_dir = os.path.join(cfg.TD3Agent.weights_path,max(os.listdir(cfg.TD3Agent.weights_path))) + "/"
+            self.save_dir = load_dir
         if lock_weights:
             if self.actor.trainable:
                 print("Actor is trainable, setting to false. This is irreversible!")

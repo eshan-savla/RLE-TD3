@@ -25,17 +25,19 @@ def main():
     agent = TD3Agent(env.action_space, env.observation_space.shape[0],gamma=cfg.TD3Agent.gamma,tau=cfg.TD3Agent.tau, epsilon=cfg.TD3Agent.epsilon, noise_clip=cfg.TD3Agent.noise_clip, policy_freq=cfg.TD3Agent.policy_freq)
     if cfg.TD3Agent.use_checkpoint_timestamp:
         agent.load_weights(use_latest=True)
+        replay_buffer.load()
     elif not cfg.TD3Agent.use_checkpoint_timestamp:
         pass
     else:
         agent.load_weights(load_dir=os.join(cfg.TD3Agent.weights_path, cfg.TD3Agent.use_checkpoint_timestamp), use_latest=False)
+        replay_buffer.load(load_dir=os.join(cfg.TD3Agent.weights_path, cfg.TD3Agent.use_checkpoint_timestamp))
 
     returns = list()
     actor_losses = list()
     critic1_losses = list() 
     critic2_losses = list()
     evals_dir = None
-    for i in tqdm(range(cfg.Training.epochs)):
+    for i in tqdm(range(cfg.Training.start, cfg.Training.epochs)):
         obs, _ = env.reset()
         # gather experience
         agent.noise_output_net.reset()
@@ -62,14 +64,15 @@ def main():
             ep_actor_loss += actor_l
             ep_critic1_loss += critic1_l
             ep_critic2_loss += critic2_l
-        if i % 25 == 0:
+        if i % 25 == 0 or i == cfg.Training.start:
             avg_return = compute_avg_return(env, agent, num_episodes=2, max_steps=cfg.Training.max_steps, render=False)
             print(
                 f'epoch {i}, actor loss {ep_actor_loss / steps}, critic 1 loss {ep_critic1_loss / steps}, critic 2 loss {ep_critic2_loss/steps} , avg return {avg_return}')
             agent.save_weights()
-            if evals_dir is None:
-                evals_dir = '../evals/'+ agent.save_dir.split('/')[-2] + "/"
-                os.makedirs(evals_dir, exist_ok=True)   # create folder if not existing yet
+            replay_buffer.save(agent.save_dir)
+        if evals_dir is None:
+            evals_dir = '../evals/'+ agent.save_dir.split('/')[-2] + "/"
+            os.makedirs(evals_dir, exist_ok=True)   # create folder if not existing yet
             df = pd.DataFrame({'returns': returns, 'actor_losses': actor_losses, 'critic1_losses': critic1_losses, 'critic2_losses': critic2_losses})
             plot_losses = df.drop("returns", axis=1, inplace=False).plot(title='TD3 losses', figsize=(10, 5))
             plot_losses.set(xlabel='Epochs', ylabel='Loss')
@@ -82,12 +85,13 @@ def main():
             plt.close('all')
             df.to_csv(evals_dir+'td3_results.csv', index=True) 
 
-        returns.append(avg_return)
+            returns.append(avg_return)
         actor_losses.append(tf.get_static_value(ep_actor_loss) / steps)
         critic1_losses.append(tf.get_static_value(ep_critic1_loss) / steps)
         critic2_losses.append(tf.get_static_value(ep_critic2_loss) / steps)
 
     agent.save_weights()
+    replay_buffer.save(agent.save_dir)
     
     env.close()
 
