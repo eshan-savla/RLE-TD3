@@ -73,22 +73,21 @@ def main():
         if evals_dir is None:
             evals_dir = '../evals/'+ agent.save_dir.split('/')[-2] + "/"
             os.makedirs(evals_dir, exist_ok=True)   # create folder if not existing yet
-            df = pd.DataFrame({'returns': returns, 'actor_losses': actor_losses, 'critic1_losses': critic1_losses, 'critic2_losses': critic2_losses})
-            plot_losses = df.drop("returns", axis=1, inplace=False).plot(title='TD3 losses', figsize=(10, 5))
-            plot_losses.set(xlabel='Epochs', ylabel='Loss')
-            plot_losses.get_figure().savefig(evals_dir+'losses_td3.png')
-
-            returns_df = pd.DataFrame({'returns': returns})
-            plot_returns = returns_df.plot(title='TD3 returns', figsize=(10, 5))
-            plot_returns.set(xlabel='Epochs', ylabel='Returns')
-            plot_returns.get_figure().savefig(evals_dir+'returns_td3.png')
-            plt.close('all')
-            df.to_csv(evals_dir+'td3_results.csv', index=True) 
-
-            returns.append(avg_return)
+        returns.append(avg_return)
         actor_losses.append(tf.get_static_value(ep_actor_loss) / steps)
         critic1_losses.append(tf.get_static_value(ep_critic1_loss) / steps)
         critic2_losses.append(tf.get_static_value(ep_critic2_loss) / steps)
+        df = pd.DataFrame({'returns': returns, 'actor_losses': actor_losses, 'critic1_losses': critic1_losses, 'critic2_losses': critic2_losses})
+        plot_losses = df.drop("returns", axis=1, inplace=False).plot(title='TD3 losses', figsize=(10, 5))
+        plot_losses.set(xlabel='Epochs', ylabel='Loss')
+        plot_losses.get_figure().savefig(evals_dir+'losses_td3.png')
+
+        returns_df = pd.DataFrame({'returns': returns})
+        plot_returns = returns_df.plot(title='TD3 returns', figsize=(10, 5))
+        plot_returns.set(xlabel='Epochs', ylabel='Returns')
+        plot_returns.get_figure().savefig(evals_dir+'returns_td3.png')
+        plt.close('all')
+        df.to_csv(evals_dir+'td3_results.csv', index=True) 
 
     agent.save_weights()
     replay_buffer.save(agent.save_dir)
