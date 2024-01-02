@@ -55,9 +55,9 @@ class DDPGAgent:
         if random_action or np.random.uniform(0, 1) < self.epsilon:
             a = self.action_space.sample()
         else:
-            a = self.actor(observation).numpy()[:, 0] # sample action from policy
+            a = np.squeeze(self.actor(observation).numpy()) # sample action from policy
             if explore:
-                a = np.squeeze([action + self.noise() for action in a]) # add noise for exploration
+                a = np.add(a, self.noise()) # add noise for exploration
         a = np.clip(a, self.action_space.low, self.action_space.high) # setzt alle Wert größer als high auf high und alle kleiner als low auf low
         return a
 
@@ -116,23 +116,23 @@ class DDPGAgent:
         np.savez(self.save_dir + "ddpg_target_actor_weights", *self.target_actor.get_weights())
         np.savez(self.save_dir + "ddpg_target_critic_weights", *self.target_critic.get_weights())
 
-    def load_weights(self, use_latest:bool=True, load_dir:str=None):
+    def load_weights(self, use_latest:bool=True, load_dir:str=None, lock_weights:bool=False):
         if use_latest:
             load_dir = os.path.join(cfg.DDPGAgent.weights_path,max(os.listdir(cfg.TD3Agent.weights_path))) + "/"
-
-        current_weights = self.actor.get_weights()
-        if self.actor.trainable:
-            print("Actor is trainable, setting to false. This is irreversible!")
-            self.actor.trainable = False
-        if self.critic.trainable:
-            print("Critic is trainable, setting to false. This is irreversible!")
-            self.critic.trainable = False
-        if self.target_actor.trainable:
-            print("Target Actor is trainable, setting to false. This is irreversible!")
-            self.target_actor.trainable = False
-        if self.target_critic.trainable:
-            print("Target Critic is trainable, setting to false. This is irreversible!")
-            self.target_critic.trainable = False
+            self.save_dir = load_dir
+        if lock_weights:
+            if self.actor.trainable:
+                print("Actor is trainable, setting to false. This is irreversible!")
+                self.actor.trainable = False
+            if self.critic.trainable:
+                print("Critic is trainable, setting to false. This is irreversible!")
+                self.critic.trainable = False
+            if self.target_actor.trainable:
+                print("Target Actor is trainable, setting to false. This is irreversible!")
+                self.target_actor.trainable = False
+            if self.target_critic.trainable:
+                print("Target Critic is trainable, setting to false. This is irreversible!")
+                self.target_critic.trainable = False
 
         actor_weights = (np.load(load_dir + "ddpg_actor_weights.npz"))
         critic_weights = np.load(load_dir + "ddpg_critic_weights.npz")

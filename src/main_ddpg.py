@@ -20,14 +20,22 @@ def main():
         tf.config.experimental.set_memory_growth(device, True)
     os.chdir(os.path.dirname(os.path.abspath(__file__)))
     replay_buffer = instantiate(cfg.ReplayBuffer)
-    env = gym.make('Ant-v3', render_mode="rgb_array") #, ctrl_cost_weight=0.1, xml_file = "../models/ant.xml", render_mode='human'
+    env = gym.make('Ant-v3', render_mode="rgb_array")
     agent = DDPGAgent(env.action_space, env.observation_space.shape[0],gamma=cfg.DDPGAgent.gamma,tau=cfg.DDPGAgent.tau, epsilon=cfg.DDPGAgent.epsilon)
     # agent.setNoise(cfg.noise.sigma, cfg.noise.theta, cfg.noise.dt)
+    if cfg.DDPGAgent.use_checkpoint_timestamp:
+        agent.load_weights(use_latest=True)
+        replay_buffer.load(agent.save_dir)
+    elif not cfg.DDPGAgent.use_checkpoint_timestamp:
+        pass
+    else:
+        agent.load_weights(load_dir=os.join(cfg.DDPGAgent.weights_path, cfg.DDPGAgent.use_checkpoint_timestamp), use_latest=False)
+        replay_buffer.load(load_dir=os.join(cfg.DDPGAgent.weights_path, cfg.DDPGAgent.use_checkpoint_timestamp))
     returns = list()
     actor_losses = list()
     critic_losses = list()
     evals_dir = None
-    for i in tqdm(range(cfg.Training.epochs)):
+    for i in tqdm(range(cfg.Training.start, cfg.Training.epochs)):
         obs, _ = env.reset()
         # gather experience
         agent.noise.reset()
@@ -52,11 +60,12 @@ def main():
             ep_actor_loss += actor_l # ep = episode
             ep_critic_loss += critic_l
             
-        if i % 25 == 0:
+        if i % 25 == 0 or i == cfg.Training.start:
             avg_return = compute_avg_return(env, agent, num_episodes=2, max_steps=cfg.Training.max_steps, render=False)
             print(
                 f'epoch {i}, actor loss {ep_actor_loss / steps}, critic loss {ep_critic_loss / steps} , avg return {avg_return}')
             agent.save_weights()
+            replay_buffer.save(agent.save_dir)
             if evals_dir is None:
                 evals_dir = '../evals/'+ agent.save_dir.split('/')[-2] + "/"
                 os.makedirs(evals_dir, exist_ok=True)   # create folder if not existing yet
@@ -74,7 +83,8 @@ def main():
         returns.append(avg_return)
         actor_losses.append(tf.get_static_value(ep_actor_loss) / steps)
         critic_losses.append(tf.get_static_value(ep_critic_loss) / steps)
-    agent.save_weights()    
+    agent.save_weights()
+    replay_buffer.save(agent.save_dir)   
     env.close()
 
 if __name__ == "__main__":
