@@ -29,7 +29,7 @@ class TD3Agent:
         # Initialize target networks as copies of the regular networks with their own weights and biases being updated slowly over time
         # The use of target networks introduces a delay in updating the actor network which helps to reduce the variance in the learning process
         # benefits: more stable and reliable q-value estimates during training process
-        self.target_actor = Actor(n_actions=action_space.shape[0])
+        self.target_actor = Actor(n_actions=action_space.shape[0], stddev=cfg.Actor.stddev)
         self.target_critic_1 = Critic(state_units=cfg.Critic.state_units,action_units=cfg.Critic.action_units, units=cfg.Critic.units, stddev=cfg.Critic.stddev)
         self.target_critic_2 = Critic(state_units=cfg.Critic.state_units,action_units=cfg.Critic.action_units, units=cfg.Critic.units, stddev=cfg.Critic.stddev)
 
@@ -138,9 +138,9 @@ class TD3Agent:
         if random_action or np.random.uniform(0, 1) < self.epsilon:
             a = self.action_space.sample()
         else:
-            a = self.actor(observation).numpy()[:, 0] # sample action from policy
+            a = np.squeeze(self.actor(observation).numpy()) # sample action from policy
             if explore:
-                a = np.squeeze([action + self.noise_output_net() for action in a]) # add noise for exploration
+                a = np.add(a, self.noise_output_net()) # add noise for exploration
           
         a = np.clip(a, self.action_space.low, self.action_space.high) # setzt alle Wert größer als high auf high und alle kleiner als low auf low
         return a

@@ -21,7 +21,7 @@ def main():
         tf.config.experimental.set_memory_growth(device, True)
     os.chdir(os.path.dirname(os.path.abspath(__file__)))
     replay_buffer = instantiate(cfg.ReplayBuffer)
-    env = gym.make('Ant-v3', ctrl_cost_weight=0.1, xml_file = "../models/ant.xml", render_mode='rgb_array') #human 
+    env = gym.make('Ant-v3' render_mode='rgb_array') #human 
     agent = TD3Agent(env.action_space, env.observation_space.shape[0],gamma=cfg.TD3Agent.gamma,tau=cfg.TD3Agent.tau, epsilon=cfg.TD3Agent.epsilon, noise_clip=cfg.TD3Agent.noise_clip, policy_freq=cfg.TD3Agent.policy_freq)
     if cfg.TD3Agent.use_checkpoint_timestamp:
         agent.load_weights(use_latest=True)
