@@ -30,7 +30,7 @@ class ReplayBuffer:
         return len(self.buffer)
     
     def save(self, path:str):
-        save_path = os.path.join(self.path, 'replay_buffer.pkl')
+        save_path = os.path.join(path, 'replay_buffer.pkl')
         with open(save_path, 'wb') as f:
             pickle.dump(self.buffer, f)
             pickle.dump(self.p_indices, f)
