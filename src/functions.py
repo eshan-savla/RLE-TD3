@@ -11,7 +11,7 @@ def compute_avg_return(env, agent, num_episodes=1, max_steps=200, render=False):
         while not (done or steps > max_steps):
             if render:
                 env.render()
-            action = agent.act(np.array([obs]),explore=steps < 1)
+            action = agent.act(np.array([obs]),explore=False)
             obs, r, done, _, _ = env.step(action)
             episode_return += r
             steps += 1
