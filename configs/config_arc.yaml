@@ -1,0 +1,55 @@
+# Change from ground truth: units, state_units, action_units, units => doubled = [800, 600], [800, 600], [600,], [300,]
+ReplayBuffer:
+  _target_: replay_buffer.ReplayBuffer
+  capacity: 1000000
+
+Training:
+  start: 0
+  epochs: 1001
+  max_steps: 1000
+  batch_size: 128
+  sample_size: 256
+  unbalance: 0.8
+
+Actor:
+  units: [800, 600]
+  stddev: 0.00005
+
+Critic:
+  state_units: [800, 600]
+  action_units: [600,]
+  units: [300,]
+  stddev: 0.00005
+
+OUNoiseOutput:
+  _partial_: true
+  theta: 0.15
+  sigma: 0.2
+  dt: 0.01
+
+OUNoiseTarget:
+  _partial_: true
+  theta: 0.15
+  sigma: 0.2
+  dt: 0.01
+
+DDPGAgent:
+  gamma: 0.99
+  tau: 0.005
+  epsilon: 0.1
+  learning_rate: 0.0003
+  weights_path: ../checkpoints/
+
+TD3Agent:
+  gamma: 0.99
+  tau: 0.005
+  epsilon: 0.1
+  learning_rate: 0.0003
+  policy_freq: 2
+  noise_clip: 0.5
+  weights_path: ../checkpoints/
+  use_checkpoint_timestamp: false # false -> fresh training; true -> continue training with latest checkpoint; timestamp -> continue training with checkpoint at timestamp
+
+    
+ 
+
