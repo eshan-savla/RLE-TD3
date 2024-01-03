@@ -29,7 +29,7 @@ class TD3Agent:
         # Initialize target networks as copies of the regular networks with their own weights and biases being updated slowly over time
         # The use of target networks introduces a delay in updating the actor network which helps to reduce the variance in the learning process
         # benefits: more stable and reliable q-value estimates during training process
-        self.target_actor = Actor(n_actions=action_space.shape[0], stddev=cfg.Actor.stddev)
+        self.target_actor = Actor(units=cfg.Actor.units, n_actions=action_space.shape[0], stddev=cfg.Actor.stddev)
         self.target_critic_1 = Critic(state_units=cfg.Critic.state_units,action_units=cfg.Critic.action_units, units=cfg.Critic.units, stddev=cfg.Critic.stddev)
         self.target_critic_2 = Critic(state_units=cfg.Critic.state_units,action_units=cfg.Critic.action_units, units=cfg.Critic.units, stddev=cfg.Critic.stddev)
 
