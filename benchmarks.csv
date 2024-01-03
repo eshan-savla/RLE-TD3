@@ -1,0 +1,3 @@
+file,time_stamp,user_name,agent_type,avg_return,return_stddev
+config,2024-01-02_13-23,eshan,ddpg,129.80522206272434,196.77466762934137
+config,2024-01-02_13-23,eshan,ddpg,99.93964641801743,90.78741475479843

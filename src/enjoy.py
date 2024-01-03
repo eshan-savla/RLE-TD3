@@ -25,7 +25,7 @@ def main(agent_type:str):
     time_stamp = agent.save_dir.split("/")[-2]
     user_name = os.getlogin()
     df = pd.DataFrame({"file": [config_name], "time_stamp": [time_stamp], "user_name": [user_name], "agent_type": [agent_type], "avg_return": [avg_return], "return_stddev": [return_stddev]})
-    df.to_csv("../evals/benchmarks.csv", mode="a", header=False, index=False)
+    df.to_csv("../benchmarks.csv", mode="a", header=False, index=False)
     
 
 
