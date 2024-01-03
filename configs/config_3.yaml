@@ -1,4 +1,4 @@
-# ground truth
+# change from ground truth: gamma 0.99 -> 0.9
 ReplayBuffer:
   _target_: replay_buffer.ReplayBuffer
   capacity: 1000000

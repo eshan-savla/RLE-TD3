@@ -1,14 +1,16 @@
-# change from ground truth: exploration noise from 0.1 -> 0.2
+# change from ground truth: target policy noise 0.2 -> 0.5
 ReplayBuffer:
   _target_: replay_buffer.ReplayBuffer
   capacity: 1000000
 
 Training:
+  start: 0
   epochs: 1001
-  max_steps: 1000
-  batch_size: 256
-  sample_size: 128
+  max_steps: 10000
+  batch_size: 128
+  sample_size: 256
   unbalance: 0.8
+  eval_steps: 1000
 
 Actor:
   units: [400, 300]
@@ -34,9 +36,10 @@ OUNoiseTarget:
 
 DDPGAgent:
   gamma: 0.99
-  tau: 0.001
+  tau: 0.005
   epsilon: 0.1
-  learning_rate: 0.0001
+  learning_rate: 0.0003
+  weights_path: ../checkpoints/
 
 TD3Agent:
   gamma: 0.99
@@ -46,6 +49,8 @@ TD3Agent:
   policy_freq: 2
   noise_clip: 0.5
   weights_path: ../checkpoints/
+  use_checkpoint_timestamp: false # false -> fresh training; true -> continue training with latest checkpoint; timestamp -> continue training with checkpoint at timestamp
+
     
  
 

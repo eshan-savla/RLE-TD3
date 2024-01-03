@@ -1,4 +1,4 @@
-# ground truth
+# change from ground truth: gamma 0.99 -> 0.999
 ReplayBuffer:
   _target_: replay_buffer.ReplayBuffer
   capacity: 1000000
@@ -11,7 +11,6 @@ Training:
   sample_size: 256
   unbalance: 0.8
   eval_steps: 1000
-
 Actor:
   units: [400, 300]
   stddev: 0.00005
