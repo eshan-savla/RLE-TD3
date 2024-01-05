@@ -21,7 +21,7 @@ def main():
         tf.config.experimental.set_memory_growth(device, True)
     os.chdir(os.path.dirname(os.path.abspath(__file__)))
     replay_buffer = instantiate(cfg.ReplayBuffer)
-    env = gym.make('Ant-v3', render_mode='rgb_array') #human 
+    env = gym.make('Ant-v3', max_episode_steps=1000,autoreset=True, render_mode='rgb_array') #human 
     agent = TD3Agent(env.action_space, env.observation_space.shape[0],gamma=cfg.TD3Agent.gamma,tau=cfg.TD3Agent.tau, epsilon=cfg.TD3Agent.epsilon, noise_clip=cfg.TD3Agent.noise_clip, policy_freq=cfg.TD3Agent.policy_freq)
     if cfg.TD3Agent.use_checkpoint_timestamp:
         agent.load_weights(use_latest=True)
@@ -52,10 +52,12 @@ def main():
             steps = 0
             for j in range(1000):
                 steps += 1
-                action = agent.act(np.array([obs]), random_action=(i < 1)) # i < 1 weil bei ersten Epoche keine Policy vorhanden ist
+                action = agent.act(np.array([obs]), random_action=(total_timesteps < cfg.Training.start_training)) # i < 1 weil bei ersten Epoche keine Policy vorhanden ist
                 # execute action
                 new_obs, r, terminated, truncated, _ = env.step(action)
                 done = terminated or truncated
+                if done:
+                    b = 0
                 replay_buffer.put(obs, action, r, new_obs, done)
                 obs = new_obs
                 if done:
