@@ -31,64 +31,74 @@ def main():
     else:
         agent.load_weights(load_dir=os.join(cfg.TD3Agent.weights_path, cfg.TD3Agent.use_checkpoint_timestamp), use_latest=False)
         replay_buffer.load(load_dir=os.join(cfg.TD3Agent.weights_path, cfg.TD3Agent.use_checkpoint_timestamp))
-
+    total_timesteps = cfg.Training.start
     returns = list()
     actor_losses = list()
     critic1_losses = list() 
     critic2_losses = list()
     evals_dir = None
-    for i in tqdm(range(cfg.Training.start, cfg.Training.epochs)):
-        obs, _ = env.reset()
-        # gather experience
-        agent.noise_output_net.reset()
-        agent.noise_target_net.reset()
+    i = 0
+    first_training = True
+    with tqdm(total=cfg.Training.timesteps, desc="Timesteps", position=total_timesteps, leave=True) as pbar:
+        while total_timesteps <= cfg.Training.timesteps:
+            obs, _ = env.reset()
+            # gather experience
+            agent.noise_output_net.reset()
+            agent.noise_target_net.reset()
 
-        ep_actor_loss = 0
-        ep_critic1_loss = 0
-        ep_critic2_loss = 0
-        steps = 0
-        for j in range(cfg.Training.start,cfg.Training.max_steps):
-            steps += 1
-            action = agent.act(np.array([obs]), random_action=(i < 1)) # i < 1 weil bei ersten Epoche keine Policy vorhanden ist
-            # execute action
-            new_obs, r, terminated, truncated, _ = env.step(action)
-            done = terminated or truncated
-            replay_buffer.put(obs, action, r, new_obs, done)
-            obs = new_obs
-            if done:
-                break
-                
-        # Learn from the experiences in the replay buffer.
-        for s in range(cfg.Training.batch_size):
-            s_states, s_actions, s_rewards, s_next_states, s_dones = replay_buffer.sample(cfg.Training.sample_size, cfg.Training.unbalance)
-            actor_l, critic1_l, critic2_l = agent.learn(s_states, s_actions, s_rewards, s_next_states, s_dones,s)
-            ep_actor_loss += actor_l
-            ep_critic1_loss += critic1_l
-            ep_critic2_loss += critic2_l
-        if i % 5 == 0 or i == cfg.Training.start:
-            avg_return, _ = compute_avg_return(env, agent, num_episodes=2, max_steps=cfg.Training.eval_steps, render=False)
-            print(
-                f'epoch {i}, actor loss {ep_actor_loss / steps}, critic 1 loss {ep_critic1_loss / steps}, critic 2 loss {ep_critic2_loss/steps} , avg return {avg_return}')
-            agent.save_weights()
-            replay_buffer.save(agent.save_dir)
-        if evals_dir is None:
-            evals_dir = '../evals/'+ agent.save_dir.split('/')[-2] + "/"
-            os.makedirs(evals_dir, exist_ok=True)   # create folder if not existing yet
-        returns.append(avg_return)
-        actor_losses.append(tf.get_static_value(ep_actor_loss) / steps)
-        critic1_losses.append(tf.get_static_value(ep_critic1_loss) / steps)
-        critic2_losses.append(tf.get_static_value(ep_critic2_loss) / steps)
-        df = pd.DataFrame({'returns': returns, 'actor_losses': actor_losses, 'critic1_losses': critic1_losses, 'critic2_losses': critic2_losses})
-        plot_losses = df.drop("returns", axis=1, inplace=False).plot(title='TD3 losses', figsize=(10, 5))
-        plot_losses.set(xlabel='Epochs', ylabel='Loss')
-        plot_losses.get_figure().savefig(evals_dir+'losses_td3.png')
+            ep_actor_loss = 0
+            ep_critic1_loss = 0
+            ep_critic2_loss = 0
+            steps = 0
+            for j in range(1000):
+                steps += 1
+                action = agent.act(np.array([obs]), random_action=(i < 1)) # i < 1 weil bei ersten Epoche keine Policy vorhanden ist
+                # execute action
+                new_obs, r, terminated, truncated, _ = env.step(action)
+                done = terminated or truncated
+                replay_buffer.put(obs, action, r, new_obs, done)
+                obs = new_obs
+                if done:
+                    break
+            total_timesteps += steps
+            
+            if total_timesteps >= cfg.Training.start_training:      
+            # Learn from the experiences in the replay buffer.
+                for s in range(cfg.Training.batch_size):
+                    s_states, s_actions, s_rewards, s_next_states, s_dones = replay_buffer.sample(cfg.Training.sample_size, cfg.Training.unbalance)
+                    actor_l, critic1_l, critic2_l = agent.learn(s_states, s_actions, s_rewards, s_next_states, s_dones,s)
+                    ep_actor_loss += actor_l
+                    ep_critic1_loss += critic1_l
+                    ep_critic2_loss += critic2_l
+                if i % 5 == 0 or first_training:
+                    first_training = False
+                    avg_return, _ = compute_avg_return(env, agent, num_episodes=5, max_steps=1000, render=False)
+                    print(
+                        f'epoch {i}, actor loss {ep_actor_loss / steps}, critic 1 loss {ep_critic1_loss / steps}, critic 2 loss {ep_critic2_loss/steps} , avg return {avg_return}')
+                    agent.save_weights()
+                    replay_buffer.save(agent.save_dir)
+                if evals_dir is None:
+                    evals_dir = '../evals/'+ agent.save_dir.split('/')[-2] + "/"
+                    os.makedirs(evals_dir, exist_ok=True)   # create folder if not existing yet
+                returns.append(avg_return)
+                actor_losses.append(tf.get_static_value(ep_actor_loss) / steps)
+                critic1_losses.append(tf.get_static_value(ep_critic1_loss) / steps)
+                critic2_losses.append(tf.get_static_value(ep_critic2_loss) / steps)
+                df = pd.DataFrame({'returns': returns, 'actor_losses': actor_losses, 'critic1_losses': critic1_losses, 'critic2_losses': critic2_losses})
+                plot_losses = df.drop("returns", axis=1, inplace=False).plot(title='TD3 losses', figsize=(10, 5))
+                plot_losses.set(xlabel='Epochs', ylabel='Loss')
+                plot_losses.get_figure().savefig(evals_dir+'losses_td3.png')
 
-        returns_df = pd.DataFrame({'returns': returns})
-        plot_returns = returns_df.plot(title='TD3 returns', figsize=(10, 5))
-        plot_returns.set(xlabel='Epochs', ylabel='Returns')
-        plot_returns.get_figure().savefig(evals_dir+'returns_td3.png')
-        plt.close('all')
-        df.to_csv(evals_dir+'td3_results.csv', index=True) 
+                returns_df = pd.DataFrame({'returns': returns})
+                plot_returns = returns_df.plot(title='TD3 returns', figsize=(10, 5))
+                plot_returns.set(xlabel='Epochs', ylabel='Returns')
+                plot_returns.get_figure().savefig(evals_dir+'returns_td3.png')
+                plt.close('all')
+                df.to_csv(evals_dir+'td3_results.csv', index=True) 
+            
+            i += 1
+            pbar.update(steps)
+
 
     agent.save_weights()
     replay_buffer.save(agent.save_dir)
