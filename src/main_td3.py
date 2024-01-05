@@ -51,7 +51,8 @@ def main():
             steps += 1
             action = agent.act(np.array([obs]), random_action=(i < 1)) # i < 1 weil bei ersten Epoche keine Policy vorhanden ist
             # execute action
-            new_obs, r, done, _, _ = env.step(action)
+            new_obs, r, terminated, truncated, _ = env.step(action)
+            done = terminated or truncated
             replay_buffer.put(obs, action, r, new_obs, done)
             obs = new_obs
             if done:
