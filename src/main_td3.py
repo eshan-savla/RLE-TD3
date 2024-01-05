@@ -64,7 +64,7 @@ def main():
                     break
             total_timesteps += steps
             
-            if total_timesteps >= cfg.Training.start_training:      
+            if total_timesteps >= cfg.Training.start_learning:      
             # Learn from the experiences in the replay buffer.
                 for s in range(cfg.Training.batch_size):
                     s_states, s_actions, s_rewards, s_next_states, s_dones = replay_buffer.sample(cfg.Training.sample_size, cfg.Training.unbalance)
