@@ -1,4 +1,4 @@
-# change from ground truth: target policy noise 0.2 -> 0.5
+# change from ground truth: target policy noise 0.1 -> 0.2
 ReplayBuffer:
   _target_: replay_buffer.ReplayBuffer
   capacity: 1000000
@@ -24,14 +24,12 @@ Critic:
 OUNoiseOutput:
   _partial_: true
   theta: 0.15
-  sigma: 0.2
+  sigma: 0.1
   dt: 0.01
 
-OUNoiseTarget:
-  _partial_: true
-  theta: 0.15
+NoiseTarget:
+  mean: 0.0
   sigma: 0.2
-  dt: 0.01
 
 DDPGAgent:
   gamma: 0.99
