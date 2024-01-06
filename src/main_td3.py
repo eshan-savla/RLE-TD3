@@ -52,7 +52,7 @@ def main():
             steps = 0
             for j in range(1000):
                 steps += 1
-                action = agent.act(np.array([obs]), random_action=(total_timesteps < cfg.Training.start_training)) # i < 1 weil bei ersten Epoche keine Policy vorhanden ist
+                action = agent.act(np.array([obs]), random_action=(total_timesteps < cfg.Training.start_learning)) # i < 1 weil bei ersten Epoche keine Policy vorhanden ist
                 # execute action
                 new_obs, r, terminated, truncated, _ = env.step(action)
                 done = terminated or truncated
