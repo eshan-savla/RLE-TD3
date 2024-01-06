@@ -24,12 +24,14 @@ Critic:
 OUNoiseOutput:
   _partial_: true
   theta: 0.15
-  sigma: 0.1
+  sigma: 0.2
   dt: 0.01
 
-NoiseTarget:
-  mean: 0.0
-  sigma: 0.1
+OUNoiseTarget:
+  _partial_: true
+  theta: 0.15
+  sigma: 0.2
+  dt: 0.01
 
 DDPGAgent:
   gamma: 0.99

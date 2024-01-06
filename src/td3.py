@@ -39,6 +39,9 @@ class TD3Agent:
 
         self.noise_output_net = OUActionNoise(mean=np.zeros(np.array(self.action_space.sample()).shape),
                                    std_deviation=float(cfg.OUNoiseOutput.sigma) * np.ones(1),theta=cfg.OUNoiseOutput.theta, dt=cfg.OUNoiseOutput.dt)
+        
+        self.noise_target_net = OUActionNoise(mean=np.zeros(np.array(self.action_space.sample()).shape),
+                            std_deviation=float(cfg.OUNoiseTarget.sigma) * np.ones(1),theta=cfg.OUNoiseTarget.theta, dt=cfg.OUNoiseTarget.dt)
 
         self._init_networks(observation_shape)
 
@@ -59,7 +62,7 @@ class TD3Agent:
         self.target_critic_2.set_weights(self.critic_2.get_weights())
 
 
-    def compute_target_q(self, rewards, next_states, dones, total_timesteps): 
+    def compute_target_q(self, rewards, next_states, dones): 
         """_summary_:
         Double Q-Learning
         Applying the 2 critic network philosophy of TD3 to the target q-value calculation
@@ -73,9 +76,8 @@ class TD3Agent:
         Returns:
             target_q: desired/ target estimate of q-value(cumulative reward) for a given state-action pair
         """
-        next_action = self.target_actor(next_states)
-        factor = 1 - (total_timesteps / cfg.Training.timesteps)
-        next_action = np.clip(np.add(next_action, factor*np.clip(np.random.default_rng().normal(float(cfg.NoiseTarget.mean),float(cfg.NoiseTarget.sigma),next_action.shape), -self.noise_clip, self.noise_clip)), self.action_space.low, self.action_space.high) # add noise for exploration
+        next_action = np.clip(self.target_actor(next_states) + np.clip(self.noise_target_net(), -self.noise_clip, self.noise_clip), self.action_space.low, self.action_space.high)
+
         #Both critic networks need to be used to compute the q-value to reduce the overestimation bias by using the the minimum of both q-values
         critic_input_1 = {'action': next_action, 'state': next_states}
         critic_input_2 = {'action': next_action, 'state': next_states}
@@ -143,8 +145,8 @@ class TD3Agent:
         a = np.clip(a, self.action_space.low, self.action_space.high) # setzt alle Wert größer als high auf high und alle kleiner als low auf low
         return a
 
-    def learn(self, states, actions, rewards, next_states, dones, step, total_timesteps):
-        target_qs = self.compute_target_q(rewards, next_states, dones, total_timesteps)
+    def learn(self, states, actions, rewards, next_states, dones, step):
+        target_qs = self.compute_target_q(rewards, next_states, dones)
         critic_grads1, critics1_l = self.get_critic_grads(states, actions, target_qs, self.critic_1)
         critic_grads2, critics2_l = self.get_critic_grads(states, actions, target_qs, self.critic_2)
         self.critic_optimizer_1.apply_gradients(zip(critic_grads1, self.critic_1.trainable_variables))
