@@ -23,11 +23,12 @@ def main():
     replay_buffer = instantiate(cfg.ReplayBuffer)
     env = gym.make('Ant-v3', render_mode='rgb_array') #human 
     agent = TD3Agent(env.action_space, env.observation_space.shape[0],gamma=cfg.TD3Agent.gamma,tau=cfg.TD3Agent.tau, epsilon=cfg.TD3Agent.epsilon, noise_clip=cfg.TD3Agent.noise_clip, policy_freq=cfg.TD3Agent.policy_freq)
-    if cfg.TD3Agent.use_checkpoint_timestamp:
+    if type(cfg.TD3Agent.use_checkpoint_timestamp) == bool and cfg.TD3Agent.use_checkpoint_timestamp:
+        print("Loading most recent checkpoint")
         agent.load_weights(use_latest=True)
         replay_buffer.load(agent.save_dir)
     elif not cfg.TD3Agent.use_checkpoint_timestamp:
-        pass
+        print("No checkpoint loaded. Starting from scratch.")
     else:
         agent.load_weights(load_dir=os.join(cfg.TD3Agent.weights_path, cfg.TD3Agent.use_checkpoint_timestamp), use_latest=False)
         replay_buffer.load(load_dir=os.join(cfg.TD3Agent.weights_path, cfg.TD3Agent.use_checkpoint_timestamp))
