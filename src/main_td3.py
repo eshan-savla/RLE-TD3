@@ -55,8 +55,17 @@ def main():
                 steps += 1
                 action = agent.act(np.array([obs]), random_action=(total_timesteps < cfg.Training.start_learning)) # i < 1 weil bei ersten Epoche keine Policy vorhanden ist
                 # execute action
-                new_obs, r, terminated, truncated, _ = env.step(action)
+
+                # Patching terminated/truncated state behaviour based on issue:
+                # https://github.com/Farama-Foundation/Gymnasium/pull/101
+                # and
+                # https://github.com/openai/gym/issues/3102
+                new_obs, r, terminated, truncated, info, _ = env.step(action)
                 done = terminated or truncated
+                episode_truncated = not done or info.get("TimeLimit.truncated", False)
+                info["TimeLimit.truncated"] = episode_truncated
+                # truncated may have been set by the env too
+                truncated = truncated or episode_truncated
                 if done:
                     b = 0
                 replay_buffer.put(obs, action, r, new_obs, done)
