@@ -16,6 +16,7 @@ from replay_buffer import ReplayBuffer
 from functions import compute_avg_return
 
 def main():
+    load_replay_buffer = True
     physical_devices = tf.config.list_physical_devices('GPU') 
     for device in physical_devices:
         tf.config.experimental.set_memory_growth(device, True)
@@ -26,20 +27,21 @@ def main():
     if type(cfg.TD3Agent.use_checkpoint_timestamp) == bool and cfg.TD3Agent.use_checkpoint_timestamp:
         print("Loading most recent checkpoint")
         agent.load_weights(use_latest=True)
-        replay_buffer.load(agent.save_dir)
+        if load_replay_buffer:
+            replay_buffer.load(agent.save_dir)
     elif not cfg.TD3Agent.use_checkpoint_timestamp:
         print("No checkpoint loaded. Starting from scratch.")
     else:
         print("Loading weights from timestamp: ", cfg.TD3Agent.use_checkpoint_timestamp)
         agent.load_weights(load_dir=os.path.join(cfg.TD3Agent.weights_path, cfg.TD3Agent.use_checkpoint_timestamp+'/'), use_latest=False)
-        replay_buffer.load(agent.save_dir)
+        if load_replay_buffer:
+            replay_buffer.load(agent.save_dir)
     total_timesteps = cfg.Training.start
     returns = list()
     actor_losses = list()
     critic1_losses = list() 
     critic2_losses = list()
     evals_dir = None
-    i = 0
     first_training = True
     with tqdm(total=cfg.Training.timesteps, desc="Timesteps", position=total_timesteps, leave=True) as pbar:
         while total_timesteps <= cfg.Training.timesteps:
@@ -61,7 +63,7 @@ def main():
                 # https://github.com/Farama-Foundation/Gymnasium/pull/101
                 # and
                 # https://github.com/openai/gym/issues/3102
-                new_obs, r, terminated, truncated, info, _ = env.step(action)
+                new_obs, r, terminated, truncated, info = env.step(action)
                 done = terminated or truncated
                 episode_truncated = not done or info.get("TimeLimit.truncated", False)
                 info["TimeLimit.truncated"] = episode_truncated
@@ -83,11 +85,11 @@ def main():
                     ep_actor_loss += actor_l
                     ep_critic1_loss += critic1_l
                     ep_critic2_loss += critic2_l
-                if i % 5 == 0 or first_training:
+                if total_timesteps % 25 == 0 or first_training:
                     first_training = False
                     avg_return, _ = compute_avg_return(env, agent, num_episodes=5, max_steps=1000, render=False)
                     print(
-                        f'epoch {i}, actor loss {ep_actor_loss / steps}, critic 1 loss {ep_critic1_loss / steps}, critic 2 loss {ep_critic2_loss/steps} , avg return {avg_return}')
+                        f'epoch {total_timesteps}, actor loss {ep_actor_loss / steps}, critic 1 loss {ep_critic1_loss / steps}, critic 2 loss {ep_critic2_loss/steps} , avg return {avg_return}')
                     agent.save_weights()
                     replay_buffer.save(agent.save_dir)
                 if evals_dir is None:
@@ -109,7 +111,6 @@ def main():
                 plt.close('all')
                 df.to_csv(evals_dir+'td3_results.csv', index=True) 
             
-            i += 1
             pbar.update(steps)
 
 
