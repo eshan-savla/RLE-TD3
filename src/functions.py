@@ -10,16 +10,18 @@ def compute_avg_return(env, agent, num_episodes=1, max_steps=200, render=False):
         terminated = False
         truncated = False
         steps = 0
+        done = False
         while not (terminated or truncated or steps > max_steps):
             if render:
                 env.render()
             action = agent.act(np.array([obs]),explore=False)
             obs, r, terminated, truncated, info = env.step(action)
-            done = terminated or truncated
-            episode_truncated = not done or info.get("TimeLimit.truncated", False)
-            info["TimeLimit.truncated"] = episode_truncated
-            # truncated may have been set by the env too
-            truncated = truncated or episode_truncated
+            if steps >= max_steps:
+                    done = terminated or truncated
+                    episode_truncated = not done or info.get("TimeLimit.truncated", False)
+                    info["TimeLimit.truncated"] = episode_truncated
+                    # truncated may have been set by the env too
+                    truncated = truncated or episode_truncated
             episode_return += r
             steps += 1
         returns.append(episode_return)
