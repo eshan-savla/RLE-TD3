@@ -52,6 +52,7 @@ def main():
             ep_critic1_loss = 0
             ep_critic2_loss = 0
             steps = 0
+            done = False
             for j in range(1000):
                 steps += 1
                 action = agent.act(np.array([obs]), random_action=(total_timesteps < cfg.Training.start_learning)) # i < 1 weil bei ersten Epoche keine Policy vorhanden ist
@@ -61,14 +62,13 @@ def main():
                 # https://github.com/Farama-Foundation/Gymnasium/pull/101
                 # and
                 # https://github.com/openai/gym/issues/3102
-                new_obs, r, terminated, truncated, info, _ = env.step(action)
-                done = terminated or truncated
-                episode_truncated = not done or info.get("TimeLimit.truncated", False)
-                info["TimeLimit.truncated"] = episode_truncated
-                # truncated may have been set by the env too
-                truncated = truncated or episode_truncated
-                if done:
-                    b = 0
+                new_obs, r, terminated, truncated, info = env.step(action)
+                if steps >= 1000:
+                    done = terminated or truncated
+                    episode_truncated = not done or info.get("TimeLimit.truncated", False)
+                    info["TimeLimit.truncated"] = episode_truncated
+                    # truncated may have been set by the env too
+                    truncated = truncated or episode_truncated
                 replay_buffer.put(obs, action, r, new_obs, done)
                 obs = new_obs
                 if done:
