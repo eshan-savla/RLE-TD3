@@ -35,14 +35,14 @@ OUNoiseTarget:
 
 DDPGAgent:
   gamma: 0.99
-  tau: 0.005
+  tau: 0.01
   epsilon: 0.1
   learning_rate: 0.0003
   weights_path: ../checkpoints/
 
 TD3Agent:
   gamma: 0.99
-  tau: 0.005
+  tau: 0.01
   epsilon: 0.1
   learning_rate: 0.0003
   policy_freq: 2
