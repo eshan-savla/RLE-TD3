@@ -1,4 +1,4 @@
-# Change from ground truth: units, state_units, action_units, units => doubled = [800, 600], [800, 600], [600,], [300,]
+# ground truth
 ReplayBuffer:
   _target_: replay_buffer.ReplayBuffer
   capacity: 1000000
@@ -12,13 +12,13 @@ Training:
   unbalance: 0.8
 
 Actor:
-  units: [800, 600]
+  units: [400, 300]
   stddev: 0.00005
 
 Critic:
-  state_units: [800, 600]
-  action_units: [600,]
-  units: [300,]
+  state_units: [400, 300]
+  action_units: [300,]
+  units: [150,]
   stddev: 0.00005
 
 OUNoiseOutput:
@@ -37,14 +37,14 @@ DDPGAgent:
   gamma: 0.99
   tau: 0.005
   epsilon: 0.1
-  learning_rate: 0.0003
+  learning_rate: 0.001
   weights_path: ../checkpoints/
 
 TD3Agent:
   gamma: 0.99
   tau: 0.005
   epsilon: 0.1
-  learning_rate: 0.0003
+  learning_rate: 0.001
   policy_freq: 2
   noise_clip: 0.5
   weights_path: ../checkpoints/
