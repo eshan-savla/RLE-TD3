@@ -43,6 +43,7 @@ def main():
     critic2_losses = list()
     evals_dir = None
     first_training = True
+    eval_count = 0
     with tqdm(total=cfg.Training.timesteps, desc="Timesteps", position=total_timesteps, leave=True) as pbar:
         while total_timesteps <= cfg.Training.timesteps:
             obs, _ = env.reset()
@@ -85,11 +86,11 @@ def main():
                     ep_actor_loss += actor_l
                     ep_critic1_loss += critic1_l
                     ep_critic2_loss += critic2_l
-                if total_timesteps % 25 == 0 or first_training:
+                if eval_count % 25 == 0 or first_training:
                     first_training = False
                     avg_return, _ = compute_avg_return(env, agent, num_episodes=5, max_steps=1000, render=False)
                     print(
-                        f'epoch {total_timesteps}, actor loss {ep_actor_loss / steps}, critic 1 loss {ep_critic1_loss / steps}, critic 2 loss {ep_critic2_loss/steps} , avg return {avg_return}')
+                        f'Timestep {total_timesteps}, actor loss {ep_actor_loss / steps}, critic 1 loss {ep_critic1_loss / steps}, critic 2 loss {ep_critic2_loss/steps} , avg return {avg_return}')
                     agent.save_weights()
                     replay_buffer.save(agent.save_dir)
                 if evals_dir is None:
@@ -110,7 +111,7 @@ def main():
                 plot_returns.get_figure().savefig(evals_dir+'returns_td3.png')
                 plt.close('all')
                 df.to_csv(evals_dir+'td3_results.csv', index=True) 
-            
+                eval_count += 1
             pbar.update(steps)
 
 
