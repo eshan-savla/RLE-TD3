@@ -1,16 +1,15 @@
-# change from ground truth: target policy noise 0.2 -> 0.
+# change from ground truth: target policy noise 0.2 -> 0.1
 ReplayBuffer:
   _target_: replay_buffer.ReplayBuffer
   capacity: 1000000
 
 Training:
   start: 0
-  epochs: 1001
-  max_steps: 10000
+  start_learning: 10000
+  timesteps: 1000000
   batch_size: 128
   sample_size: 256
   unbalance: 0.8
-  eval_steps: 1000
 
 Actor:
   units: [400, 300]
@@ -31,7 +30,7 @@ OUNoiseOutput:
 OUNoiseTarget:
   _partial_: true
   theta: 0.15
-  sigma: 0.2
+  sigma: 0.1
   dt: 0.01
 
 DDPGAgent:

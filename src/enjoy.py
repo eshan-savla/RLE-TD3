@@ -6,10 +6,10 @@ from functions import compute_avg_return
 import pandas as pd
 
 def main(agent_type:str):
-    load_dir = "../models/ddpg_gt/2024-01-02_13-23/"
-    use_latest = False
+    load_dir = None
+    use_latest = True
     os.chdir(os.path.dirname(os.path.abspath(__file__)))
-    env = gym.make('Ant-v3', render_mode = "rgb_array") #, ctrl_cost_weight=0.1, xml_file = "../models/ant.xml", render_mode='human'
+    env = gym.make('Ant-v3', autoreset=True, render_mode = "human") #, ctrl_cost_weight=0.1, xml_file = "../models/ant.xml", render_mode='human'
     if agent_type == "ddpg":
         from ddpg_config import cfg as ddpg_cfg, config_name
         agent = DDPGAgent(env.action_space, env.observation_space.shape[0],gamma=ddpg_cfg.DDPGAgent.gamma,tau=ddpg_cfg.DDPGAgent.tau, epsilon=0)
@@ -32,4 +32,4 @@ def main(agent_type:str):
 
     env.close()
 if __name__ == '__main__':
-    main("ddpg")
+    main("td3")
