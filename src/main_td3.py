@@ -80,7 +80,7 @@ def main():
             # Learn from the experiences in the replay buffer.
                 for s in range(cfg.Training.batch_size):
                     s_states, s_actions, s_rewards, s_next_states, s_dones = replay_buffer.sample(cfg.Training.sample_size, cfg.Training.unbalance)
-                    actor_l, critic1_l, critic2_l = agent.learn(s_states, s_actions, s_rewards, s_next_states, s_dones,s)
+                    actor_l, critic1_l, critic2_l = agent.learn(s_states, s_actions, s_rewards, s_next_states, s_dones,s, total_timesteps)
                     ep_actor_loss += actor_l
                     ep_critic1_loss += critic1_l
                     ep_critic2_loss += critic2_l
