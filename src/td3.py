@@ -62,7 +62,7 @@ class TD3Agent:
         self.target_critic_2.set_weights(self.critic_2.get_weights())
 
 
-    def compute_target_q(self, rewards, next_states, dones, total_timesteps): 
+    def compute_target_q(self, rewards, next_states, dones, total_timesteps, reduce_noise: bool = False, noise_multiplicator:int = 5, min_noise_factor: float = 0.05): 
         """_summary_:
         Double Q-Learning
         Applying the 2 critic network philosophy of TD3 to the target q-value calculation
@@ -76,10 +76,12 @@ class TD3Agent:
         Returns:
             target_q: desired/ target estimate of q-value(cumulative reward) for a given state-action pair
         """
-        factor = np.add(-np.exp(total_timesteps/cfg.Training.timesteps * 5), np.exp(5))
-        factor = factor/np.exp(5)
-        if factor < 0.05:
-            factor = 0.05
+        factor = 1
+        if reduce_noise:
+            factor = np.add(-np.exp(total_timesteps/cfg.Training.timesteps * noise_multiplicator), np.exp(noise_multiplicator))
+            factor = factor/np.exp(noise_multiplicator)
+            if factor < min_noise_factor:
+                factor = min_noise_factor
         next_action = np.clip(self.target_actor(next_states) + np.clip(factor*self.noise_target_net(), -self.noise_clip, self.noise_clip), self.action_space.low, self.action_space.high)
 
         #Both critic networks need to be used to compute the q-value to reduce the overestimation bias by using the the minimum of both q-values
