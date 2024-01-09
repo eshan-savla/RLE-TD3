@@ -4,6 +4,8 @@ import numpy as np
 def compute_avg_return(env, agent, num_episodes=1, max_steps=200, render=False):
     total_return = 0.0
     returns = []
+    max_steps = max_steps * num_episodes
+    total_steps = 0
     for _ in range(num_episodes):
         obs, _ = env.reset()
         episode_return = 0.0
