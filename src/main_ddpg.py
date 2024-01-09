@@ -43,7 +43,7 @@ def main():
     evals_dir = None
     first_training = True
     eval_count = 0
-    with tqdm(total=cfg.Training.timesteps, desc="Timesteps", position=total_timesteps, leave=True) as pbar:
+    with tqdm(total=cfg.Training.timesteps, desc="Timesteps", leave=True) as pbar:
         while total_timesteps <= cfg.Training.timesteps:
             obs, _ = env.reset()
             # gather experience
