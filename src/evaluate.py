@@ -72,13 +72,8 @@ def evaluate(data_path_csv:str = 'benchmarks_test.csv'):
     
     # Save the plot
     fig.savefig('returns_per_episode.png')
- 
 
-# Call the function
-evaluate(data_path_csv=data_path_csv)
-
-#evaluate (data_path_csv=data_path_csv)
-if __name__ == "__evaluate__":
+if __name__ == "__main__":
     elapsed_time = timeit.timeit(evaluate(data_path_csv=data_path_csv), number=1)
     minutes, seconds = divmod(elapsed_time, 60)
     print(f"The main function ran for {int(minutes)} minutes and {seconds:.2f} seconds.")
