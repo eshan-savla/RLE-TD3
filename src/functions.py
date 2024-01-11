@@ -46,3 +46,15 @@ def compute_avg_return(env, agent, num_episodes=1, max_steps=1000, render=False)
     avg_return_stddev = np.mean(stddevs)              #calculate average standard deviation of all experiments
         
     return avg_return, avg_return_stddev, episode_no, returns, stddevs
+
+
+
+# Calculate the mean standard deviation per episode over all experiments
+def flatten(lst):
+    result = []
+    for i in lst:
+        if isinstance(i, list):
+            result.extend(flatten(i))
+        else:
+            result.append(i)
+    return result
