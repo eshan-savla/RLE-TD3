@@ -30,7 +30,7 @@ OUNoiseOutput:
 OUNoiseTarget:
   _partial_: true
   theta: 0.15
-  sigma: 0.2
+  sigma: 0.5
   dt: 0.01
 
 DDPGAgent:
