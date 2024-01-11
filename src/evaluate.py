@@ -5,6 +5,7 @@ import ast
 
 from functions import flatten
 import timeit
+import datetime
 
 
 #Set the path to the csv file to evaluate the benchmark results
@@ -62,7 +63,7 @@ def evaluate(data_path_csv:str = 'benchmarks_test.csv'):
     # Set the labels and title
     ax.set_xlabel('Episode')
     ax.set_ylabel('Returns per Episode')
-    ax.set_title('Returns per Episode vs. Episode')
+    ax.set_title('Returns per Episode for different configurations')
 
     # Show the legend
     ax.legend()
@@ -70,12 +71,12 @@ def evaluate(data_path_csv:str = 'benchmarks_test.csv'):
     # Show the plot
     plt.show()
     
-    # Save the plot
-    fig.savefig('returns_per_episode.png')
+    # Save the plot with the timestamp in the file name
+    timestamp = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M")
+    fig.savefig(f'returns_per_episode_{timestamp}.png')
 
 if __name__ == "__main__":
-    elapsed_time = timeit.timeit(evaluate(data_path_csv=data_path_csv), number=1)
-    minutes, seconds = divmod(elapsed_time, 60)
-    print(f"The main function ran for {int(minutes)} minutes and {seconds:.2f} seconds.")
+    evaluate(data_path_csv=data_path_csv)
+ 
 
 
