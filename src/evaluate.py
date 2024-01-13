@@ -17,7 +17,7 @@ data_path_csv = './benchmarks_td3_test_hp.csv'
 # Set the path to the csv file to evaluate the training results
 training_data_path_csv = './models/td3_gt_(config_0)/td3_results.csv'
 
-def evaluate_enjoy(data_path_csv:str = 'benchmarks_test.csv', plot_type: str = 'line', only_avgs:bool = False):
+def evaluate_enjoy(data_path_csv:str = 'benchmarks_test.csv', plot_type: str = 'bar', only_avgs:bool = False):
 
     # Read the data from the CSV file
     data = pd.read_csv(data_path_csv) #'benchmarks_test.csv'
@@ -43,6 +43,7 @@ def evaluate_enjoy(data_path_csv:str = 'benchmarks_test.csv', plot_type: str = '
     data['y2'] = data.apply(lambda row: np.mean(row['returns']) - mean_stddev_per_episode[(row['time_stamp'], row['config_name'], row['user_name'], row['agent_type'])], axis=1)
 
     # Create a Linegraph with x-axis = episode, y-axis=returns per episode
+    timestamp = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M")
     if plot_type.lower() == 'line':
         fig, ax = plt.subplots()
 
@@ -80,21 +81,25 @@ def evaluate_enjoy(data_path_csv:str = 'benchmarks_test.csv', plot_type: str = '
         #plt.show()
         
         # Save the plot with the timestamp in the file name
-        timestamp = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M")
         fig.savefig(f'{timestamp}_returns_per_episode.png')
 
     if plot_type.lower() == 'bar':
+        color=['green', 'blue', 'blue', 'gold', 'gold', 'darkred',  'darkred', 'darkgreen', 'darkorchid', 'darkorchid', 'cadetblue']
         X = data['config_name']
         Y = data['avg_return']
+        t = type(Y)
         yerr = data['avg_return_stddev']
-        plt.figure()
-        plt.bar(X, Y, yerr=yerr, align='center', color=['blue', 'blue', 'green', 'gold', 'gold', 'darkred',  'darkred'], ecolor='black', capsize=10)
-        plt.title('Average Return per Configuration')
-        plt.ylabel('Average Return')
-        plt.xlabel('Configuration')
-        plt.xticks(rotation=45)
-        plt.tight_layout()
-        plt.savefig(f'{timestamp}_avg_return_per_config.png')
+        fig, ax = plt.subplots()
+        fig.set_figheight(10)
+        fig.set_figwidth(25)
+        ax.bar(X, Y, yerr=yerr, align='center', color=color[0:len(X)], ecolor='black', capsize=10)
+        ax.set_title('Average Return per Configuration', fontsize=25)
+        ax.set_ylabel('Average Return', fontsize=25)
+        ax.set_xlabel('Configuration', fontsize=25)
+        ax.set_xticklabels(X, rotation=45, fontsize=20)
+        ax.tick_params(axis='y', labelsize=20)
+        fig.tight_layout()
+        fig.savefig(f'{timestamp}_avg_return_per_config.png')
 
 
 def evaluate_training(training_data_path_csv = training_data_path_csv):
