@@ -84,7 +84,7 @@ def main():
                     ep_critic_loss += critic_l
                 if eval_count % 25 == 0 or first_training:
                     first_training = False
-                    avg_return, _ = compute_avg_return(env, agent, num_episodes=5, max_steps=1000, render=False)
+                    avg_return, _, _, _, _ = compute_avg_return(env, agent, num_episodes=5, max_steps=1000, render=False)
                     print(
                         f'Timestep {total_timesteps}, actor loss {ep_actor_loss / steps}, critic 1 loss {ep_critic_loss / steps} , avg return {avg_return}')
                     agent.save_weights()
