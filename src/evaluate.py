@@ -12,16 +12,16 @@ import os
 
 
 #Set the path to the csv file to evaluate the benchmark results
-data_path_csv = './benchmarks_ddpg_td3_gt.csv'
+data_path_csv = './benchmarks_td3_test_hp.csv'
 
 # Set the path to the csv file to evaluate the training results
 training_data_path_csv = './models/td3_gt_(config_0)/td3_results.csv'
 
-def evaluate_enjoy(data_path_csv:str = 'benchmarks_test.csv'):
+def evaluate_enjoy(data_path_csv:str = 'benchmarks_test.csv', plot_type: str = 'line', only_avgs:bool = False):
 
     # Read the data from the CSV file
     data = pd.read_csv(data_path_csv) #'benchmarks_test.csv'
-
+    avg_return = data['avg_return']
     # Convert the string representation of lists into actual lists of floats
     data['returns'] = data['returns'].apply(ast.literal_eval)
     data['stddevs'] = data['stddevs'].apply(ast.literal_eval)
@@ -43,39 +43,58 @@ def evaluate_enjoy(data_path_csv:str = 'benchmarks_test.csv'):
     data['y2'] = data.apply(lambda row: np.mean(row['returns']) - mean_stddev_per_episode[(row['time_stamp'], row['config_name'], row['user_name'], row['agent_type'])], axis=1)
 
     # Create a Linegraph with x-axis = episode, y-axis=returns per episode
-    fig, ax = plt.subplots()
+    if plot_type.lower() == 'line':
+        fig, ax = plt.subplots()
 
-    for i, row in data.iterrows():
-        episode_no = row['episode_no']
-        returns = row['returns']
-        stddevs = row['stddevs']
-        
-        # Convert the list into a string representation
-        episode_no_str = str(episode_no)
-        # Convert the string representation of episode numbers into actual list of floats
-        episode_no = ast.literal_eval(episode_no_str)
-        
-        # Plot the returns per episode
-        #label = f'{row["time_stamp"]} - {row["config_name"]} - {row["user_name"]} - {row["agent_type"]}'
-        label = f' {row["agent_type"]}-{row["config_name"]}'
+        for i, row in data.iterrows():
+            episode_no = row['episode_no']
+            returns = row['returns']
+            stddevs = row['stddevs']
+            
+            # Convert the list into a string representation
+            episode_no_str = str(episode_no)
+            # Convert the string representation of episode numbers into actual list of floats
+            episode_no = ast.literal_eval(episode_no_str)
+            
+            # Plot the returns per episode
+            #label = f'{row["time_stamp"]} - {row["config_name"]} - {row["user_name"]} - {row["agent_type"]}'
+            label = f' {row["agent_type"]}-{row["config_name"]}'
+            label_means = f'{row["agent_type"]}-{row["config_name"]}-mean'
+            
+            if not only_avgs:
+                ax.plot(episode_no, returns, label=label)
+            ax.plot(episode_no, [row["avg_return"] for i in range(len(returns))], label=label_means)
+            
+            # Add a subplot using fill_between
+            if not only_avgs:
+                ax.fill_between(episode_no, np.array(returns) + np.array(stddevs), np.array(returns) - np.array(stddevs), alpha=0.3)
+            ax.fill_between(episode_no, np.array([row["avg_return"] for i in range(len(returns))]) + np.array([row["avg_return_stddev"] for i in range(len(returns))]), np.array([row["avg_return"] for i in range(len(returns))]) - np.array([row["avg_return_stddev"] for i in range(len(returns))]), alpha=0.3)
 
-        ax.plot(episode_no, returns, label=label)
+        # Set the labels and title and legend
+        ax.set_xlabel('Episode')
+        ax.set_ylabel('Returns per Episode')
+        ax.set_title('Returns per Episode for different configurations')
+        ax.legend()
         
-        # Add a subplot using fill_between
-        ax.fill_between(episode_no, np.array(returns) + np.array(stddevs), np.array(returns) - np.array(stddevs), alpha=0.3)
+        # Show the plot
+        #plt.show()
+        
+        # Save the plot with the timestamp in the file name
+        timestamp = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M")
+        fig.savefig(f'{timestamp}_returns_per_episode.png')
 
-    # Set the labels and title and legend
-    ax.set_xlabel('Episode')
-    ax.set_ylabel('Returns per Episode')
-    ax.set_title('Returns per Episode for different configurations')
-    ax.legend()
-    
-    # Show the plot
-    #plt.show()
-    
-    # Save the plot with the timestamp in the file name
-    timestamp = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M")
-    fig.savefig(f'{timestamp}_returns_per_episode.png')
+    if plot_type.lower() == 'bar':
+        X = data['config_name']
+        Y = data['avg_return']
+        yerr = data['avg_return_stddev']
+        plt.figure()
+        plt.bar(X, Y, yerr=yerr, align='center', color=['blue', 'blue', 'green', 'gold', 'gold', 'darkred',  'darkred'], ecolor='black', capsize=10)
+        plt.title('Average Return per Configuration')
+        plt.ylabel('Average Return')
+        plt.xlabel('Configuration')
+        plt.xticks(rotation=45)
+        plt.tight_layout()
+        plt.savefig(f'{timestamp}_avg_return_per_config.png')
 
 
 def evaluate_training(training_data_path_csv = training_data_path_csv):
