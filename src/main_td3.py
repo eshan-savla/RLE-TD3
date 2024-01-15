@@ -57,7 +57,7 @@ def main():
             steps = 0
             for j in range(1000):
                 steps += 1
-                action = agent.act(np.array([obs]), random_action=(total_timesteps < cfg.Training.start_learning)) # i < 1 weil bei ersten Epoche keine Policy vorhanden ist
+                action = agent.act(np.array([obs]), random_action=(total_timesteps < cfg.Training.start_learning)) # i < 1 no policy for first episode
                 # execute action
 
                 # Patching terminated/truncated state behaviour based on issue:
