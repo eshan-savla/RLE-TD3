@@ -13,9 +13,21 @@ from noise import OUActionNoise
 
 class TD3Agent:
     def __init__(self, action_space, observation_shape, gamma=0.99, tau=0.001, epsilon=0.05, noise_clip=0.5, policy_freq=2):
+        """
+        Initializes the TD3 agent.
+
+        Args:
+            action_space (gym.Space): The action space of the environment.
+            observation_shape (tuple): The shape of the observation space.
+            gamma (float, optional): The discount factor. Defaults to 0.99.
+            tau (float, optional): The target network weight adaptation factor. Defaults to 0.001.
+            epsilon (float, optional): The exploration noise factor. Defaults to 0.05.
+            noise_clip (float, optional): The clipping range for the exploration noise. Defaults to 0.5.
+            policy_freq (int, optional): The frequency of updating the policy network. Defaults to 2.
+        """
         self.action_space = action_space
-        self.tau = tau  # target network weight adaptation       ---> TODO: check if default value is correct with regard to the paper
-        self.gamma = gamma  # discount factor
+        self.tau = tau
+        self.gamma = gamma
         self.epsilon = epsilon
         self.noise_clip = noise_clip
         self.policy_freq = policy_freq
@@ -26,9 +38,6 @@ class TD3Agent:
         self.critic_1 = Critic(state_units=cfg.Critic.state_units,action_units=cfg.Critic.action_units, units=cfg.Critic.units, stddev=cfg.Critic.stddev)
         self.critic_2 = Critic(state_units=cfg.Critic.state_units,action_units=cfg.Critic.action_units, units=cfg.Critic.units, stddev=cfg.Critic.stddev)
 
-        # Initialize target networks as copies of the regular networks with their own weights and biases being updated slowly over time
-        # The use of target networks introduces a delay in updating the actor network which helps to reduce the variance in the learning process
-        # benefits: more stable and reliable q-value estimates during training process
         self.target_actor = Actor(units=cfg.Actor.units, n_actions=action_space.shape[0], stddev=cfg.Actor.stddev)
         self.target_critic_1 = Critic(state_units=cfg.Critic.state_units,action_units=cfg.Critic.action_units, units=cfg.Critic.units, stddev=cfg.Critic.stddev)
         self.target_critic_2 = Critic(state_units=cfg.Critic.state_units,action_units=cfg.Critic.action_units, units=cfg.Critic.units, stddev=cfg.Critic.stddev)
@@ -38,7 +47,7 @@ class TD3Agent:
         self.critic_optimizer_2 = tf.keras.optimizers.Adam(learning_rate=cfg.TD3Agent.learning_rate)
 
         self.noise_output_net = OUActionNoise(mean=np.zeros(np.array(self.action_space.sample()).shape),
-                                   std_deviation=float(cfg.OUNoiseOutput.sigma) * np.ones(1),theta=cfg.OUNoiseOutput.theta, dt=cfg.OUNoiseOutput.dt)
+                                    std_deviation=float(cfg.OUNoiseOutput.sigma) * np.ones(1),theta=cfg.OUNoiseOutput.theta, dt=cfg.OUNoiseOutput.dt)
         
         self.noise_target_net = OUActionNoise(mean=np.zeros(np.array(self.action_space.sample()).shape),
                             std_deviation=float(cfg.OUNoiseTarget.sigma) * np.ones(1),theta=cfg.OUNoiseTarget.theta, dt=cfg.OUNoiseTarget.dt)
@@ -46,6 +55,15 @@ class TD3Agent:
         self._init_networks(observation_shape)
 
     def _init_networks(self, observation_shape):
+        """
+        Initializes the actor and critic networks and sets their initial weights.
+
+        Parameters:
+        observation_shape (int): The shape of the observation space.
+
+        Returns:
+        None
+        """
         initial_state = np.zeros([1, observation_shape])
 
         initial_action = self.actor(initial_state)
@@ -166,6 +184,9 @@ class TD3Agent:
         return self.previous_actor_loss, critics1_l, critics2_l
     
     def target_update(self):
+        """
+        Update the target networks by copying the weights from the main networks with a soft update.
+        """
         TD3Agent.update_target(self.target_actor, self.actor, self.tau)
         TD3Agent.update_target(self.target_critic_1, self.critic_1, self.tau)
         TD3Agent.update_target(self.target_critic_2, self.critic_2, self.tau)
@@ -190,6 +211,11 @@ class TD3Agent:
         model_target.set_weights(new_weights)
 
     def save_weights(self):
+        """
+        Save the weights of the TD3 agent's actor and critic networks, as well as the target networks.
+        The weights are saved in separate .npz files in the specified save directory.
+        If no save directory is specified, a new directory is created with the current date and time.
+        """
         if self.save_dir is None:
             now = datetime.now()
             self.save_dir = now.strftime("%Y-%m-%d_%H-%M")
@@ -205,6 +231,20 @@ class TD3Agent:
         np.savez(self.save_dir + "target_critic2_weights", *self.target_critic_2.get_weights())
 
     def load_weights(self, use_latest:bool=True, load_dir:str=None, lock_weights:bool=False):
+        """
+        Loads the weights of the TD3 agent from the specified directory.
+
+        Parameters:
+        - use_latest (bool): If True, loads the weights from the latest directory in the weights_path.
+                                If False, loads the weights from the specified load_dir.
+                                Default is True.
+        - load_dir (str): The directory path from which to load the weights.
+                            If None, the weights_path will be used.
+                            Default is None.
+        - lock_weights (bool): If True, locks the weights of the actor, critic, and target networks.
+                                This is irreversible.
+                                Default is False.
+        """
         if use_latest:
             load_dir = os.path.join(cfg.TD3Agent.weights_path,max(os.listdir(cfg.TD3Agent.weights_path))) + "/"
         self.save_dir = load_dir
