@@ -15,7 +15,7 @@ import os
 data_path_csv = './benchmarks_td3_test_hp.csv'
 
 # Set the path to the csv file to evaluate the training results
-training_data_path_csv = './models/td3_gt_(config_0)/td3_results.csv'
+training_data_path_csv = 'models/td3_gt_(config_0)/td3_results.csv'
 
 def evaluate_enjoy(data_path_csv:str = 'benchmarks_test.csv', plot_type: str = 'bar', only_avgs:bool = False):
 
@@ -106,59 +106,65 @@ def evaluate_training(training_data_path_csv = training_data_path_csv):
     # Load the training data from the CSV file
     training_data = pd.read_csv(training_data_path_csv)
     # Plot actor loss over time
-    plt.figure()
-    plt.plot(training_data['Unnamed: 0'], training_data['actor_losses'], color = "blue",label='Actor Loss')
-    plt.xlabel('Steps')
-    plt.ylabel('Actor Loss')
-    plt.title('Actor Loss over Time')
+    plt.figure(figsize=(15,10))
+    X = np.array(list(range(1000, 1000001, int(1000000/len(training_data['actor_losses']))))[1:])
+    plt.plot(X, training_data['actor_losses'], color = "blue",label='Actor Loss')
+    plt.xlabel('Timesteps', fontsize=20)
+    plt.ylabel('Actor Loss', fontsize=20)
+    # plt.title('Actor Loss over Time', fontsize=20)
     # Visualize a trend line
     x = training_data['Unnamed: 0']
     y = training_data['actor_losses']
-    z = np.polyfit(x, y, 1)
+    z = np.polyfit(X, y, 1)
     p = np.poly1d(z)
-    plt.plot(x, p(x), "r--", label='Trend Line') 
-    plt.xticks(range(0,10, 100000))
+    plt.plot(X, p(X), "r--", label='Trend Line', linewidth=6)
+    plt.xticks(range(0,1000000, 100000), fontsize=15)
+    plt.tick_params(axis='y', labelsize=15)
 
     # Add legend
     plt.legend()
-    plt.title('Actor Loss over Time')
+    plt.title('Actor Loss over Time', fontsize=20)
+    plt.tight_layout()
     # Save plot
     timestamp = datetime.datetime.now().strftime("%Y-%m-%d-%H-%M")
     filename = f"{training_data_path_csv}_{timestamp}_actor_losses.png"
     plt.savefig(filename)
 
     # Plot critics loss over time
-    plt.figure()
+    plt.figure(figsize=(15,10))
 
     x1 = training_data['Unnamed: 0']
     y1 = training_data['critic1_losses']
-    plt.plot(x1, y1, label='Critic1 loss', color='red')
-    plt.xticks(range(0,10, 100000))
-    plt.set_xlabel(range(0,100000, 100000))
+    plt.plot(X, y1, label='Critic loss', color='red')
+    plt.xticks(range(0,1000000, 100000), fontsize=15)
+    plt.tick_params(axis='y', labelsize=15)
 
     x2 = training_data['Unnamed: 0']
     y2 = training_data['critic2_losses']
-    plt.plot(x2, y2, label='Critic2 loss')
-    plt.xticks(range(0,10, 100000))
+    plt.plot(X, y2, label='Critic2 loss', color='#1f77ba')
+    plt.xticks(range(0,1000000, 100000), fontsize=15)
+    plt.tick_params(axis='y', labelsize=15)
 
-    # Calculate and plot trend line for critics loss
-    slope2, intercept2, r_value2, p_value2, std_err2 = stats.linregress(x2, y2)
-    plt.plot(x2, intercept2 + slope2*x2, 'g--', label='Trend line 2')
-    plt.xticks(range(0,10, 100000))
+    # # Calculate and plot trend line for critics loss
+    slope2, intercept2, r_value2, p_value2, std_err2 = stats.linregress(X, y2)
+    plt.plot(X, intercept2 + slope2*X, 'g--', label='Trend line 2', linewidth=6)
+    plt.xticks(range(0,1000000, 100000), fontsize=15)
+    plt.tick_params(axis='y', labelsize=15)
 
 
-    slope1, intercept1, r_value1, p_value1, std_err1 = stats.linregress(x1, y1)
-    plt.plot(x1, intercept1 + slope1*x1, 'r--', label='Trend line 1')
-    plt.xticks(range(0,10, 100000))
+    slope1, intercept1, r_value1, p_value1, std_err1 = stats.linregress(X, y1)
+    plt.plot(X, intercept1 + X*slope1, 'r--', label='Trend line 1', linewidth=6)
+    plt.xticks(range(0,1000000, 100000), fontsize=15)
+    plt.tick_params(axis='y', labelsize=15)
     
     # Set labels and title
-    plt.xlabel('Steps')
-    plt.ylabel('Loss')
-    plt.title('Critic Losses over Time')
+    plt.xlabel('Timesteps', fontsize=20)
+    plt.ylabel('Loss', fontsize=20)
+    plt.title('Critic Loss over Time', fontsize=20)
 
     # Add a legend
     plt.legend()
-
+    plt.tight_layout()
     # Save the plot
     plt.savefig(f"{training_data_path_csv}_{timestamp}_critic_losses.png")
 
@@ -166,8 +172,8 @@ def evaluate_training(training_data_path_csv = training_data_path_csv):
 
 
 if __name__ == "__main__":
-    evaluate_enjoy(data_path_csv=data_path_csv)
-    #evaluate_training(training_data_path_csv=training_data_path_csv)
+    # evaluate_enjoy(data_path_csv=data_path_csv)
+    evaluate_training(training_data_path_csv=training_data_path_csv)
 
   
 
