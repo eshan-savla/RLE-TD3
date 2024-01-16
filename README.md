@@ -14,7 +14,7 @@ You can find the different config files within the folder /configs.
 The config.yaml file is the ground truth file of configurations. 
 
 
-![Alt text](./documentation/Workflow_structure_overview.png)
+![Alt text](./documentation/images/Workflow_structure_overview.png)
 
 Workflow:
 
