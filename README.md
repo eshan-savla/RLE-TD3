@@ -1,7 +1,12 @@
 # RLE-TD3
-Implemementation of the TD3 RL Network by RLE
+Implemementation of the TD3 Reinforcment learning algorithm by Eshan Savla, Raphael Aberle and Leo Schäfer
 
-## I. Configuration of the environment 
+The model was trained and tested using the Ant-v3 environment from mujoco using [OpenAI's Gymnasiums](https://gymnasium.farama.org/index.html)
+
+### Setting up the environement and installing dependencies.
+
+#### Setting up the python virtual environement under ubuntu:
+
 
 -----> TODO: Explain the basic setup for a foreign repo user.
 
