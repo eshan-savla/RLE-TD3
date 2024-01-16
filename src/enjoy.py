@@ -5,11 +5,11 @@ import gymnasium as gym
 from functions import compute_avg_return
 import pandas as pd
 
-def main(agent_type:str):
+def main(agent_type:str, render_mode:str=None):
     load_dir = None #specify the path to the model you want to evaluate. For more information: see Mapping_mod-conf.md
     use_latest = True   #True if you want to use the latest checkpoint
     os.chdir(os.path.dirname(os.path.abspath(__file__)))
-    env = gym.make('Ant-v3', autoreset=True, render_mode = "rgb_array") #render_mode='human' => render the environment visualle // render_mode='rgb_array' => render the environment as an array to collect results
+    env = gym.make('Ant-v3', autoreset=True, render_mode = render_mode) #render_mode='human' => render the environment visualle // render_mode='rgb_array' => render the environment as an array to collect results
     if agent_type == "ddpg":
         from ddpg_config import cfg as ddpg_cfg, config_name
         agent = DDPGAgent(env.action_space, env.observation_space.shape[0],gamma=ddpg_cfg.DDPGAgent.gamma,tau=ddpg_cfg.DDPGAgent.tau, epsilon=0)
