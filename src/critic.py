@@ -6,14 +6,14 @@ class Critic(tf.keras.layers.Layer):
         Initializes the Critic class.
 
         Parameters:
-            state_units (tuple): A tuple specifying the number of units in each state layer.
-            action_units (tuple): A tuple specifying the number of units in each action layer.
-            units (tuple): A tuple specifying the number of units in each Q-value layer.
-            stddev (float): The standard deviation for the random normal initializer.
-            **kwargs: Additional keyword arguments to be passed to the base class constructor.
+            - state_units (tuple): A tuple specifying the number of units in each state layer.
+            - action_units (tuple): A tuple specifying the number of units in each action layer.
+            - units (tuple): A tuple specifying the number of units in each Q-value layer.
+            - stddev (float): The standard deviation for the random normal initializer.
+            - **kwargs: Additional keyword arguments to be passed to the base class constructor.
 
         Returns:
-            None
+            - None
         """
         super(Critic, self).__init__(**kwargs)
         self.layers_state = []
@@ -40,12 +40,12 @@ class Critic(tf.keras.layers.Layer):
         Forward pass of the critic network.
 
         Parameters:
-            inputs (dict): Dictionary containing the input tensors.
+            - inputs (dict): Dictionary containing the input tensors.
                 - 'action': Tensor representing the action input.
                 - 'state': Tensor representing the state input.
 
         Returns:
-            outputs (Tensor): Tensor representing the q-values output.
+            - outputs (Tensor): Tensor representing the q-values output.
         """
         p_action = inputs['action']
         p_state = inputs['state']

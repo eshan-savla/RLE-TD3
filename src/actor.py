@@ -6,13 +6,13 @@ class Actor(tf.keras.layers.Layer):
         Initialize the Actor network.
 
         Parameters:
-            units (tuple): A tuple specifying the number of units/neurons in each hidden layer.
-            n_actions (int): The dimension of the action space.
-            stddev (float): The standard deviation for the kernel initializer.
-            **kwargs: Additional keyword arguments to be passed to the base class.
+            - units (tuple): A tuple specifying the number of units/neurons in each hidden layer.
+            - n_actions (int): The dimension of the action space.
+            - stddev (float): The standard deviation for the kernel initializer.
+            - **kwargs: Additional keyword arguments to be passed to the base class.
 
         Returns:
-            None
+            - None
         """
         super(Actor, self).__init__(**kwargs)
         self.layers = []
@@ -27,11 +27,11 @@ class Actor(tf.keras.layers.Layer):
         Perform a forward pass through the actor network.
 
         Parameters:
-            inputs: The input tensor.
-            **kwargs: Additional keyword arguments to be passed to the base class.
+            - inputs: The input tensor.
+            - **kwargs: Additional keyword arguments to be passed to the base class.
 
         Returns:
-            outputs: The output tensor after passing through all the layers.
+            - outputs: The output tensor after passing through all the layers.
         """
         outputs = inputs
         for l in self.layers:

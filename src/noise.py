@@ -6,14 +6,14 @@ class OUActionNoise:
         Initialize the Noise object.
 
         Parameters:
-            mean (float): The mean value of the noise.
-            std_deviation (float): The standard deviation of the noise.
-            theta (float, optional): The theta parameter for the Ornstein-Uhlenbeck process. Default is 0.15.
-            dt (float, optional): The time step for the Ornstein-Uhlenbeck process. Default is 1e-2.
-            x_initial (float, optional): The initial value of the noise. Default is None.
+            - mean (float): The mean value of the noise.
+            - std_deviation (float): The standard deviation of the noise.
+            - theta (float, optional): The theta parameter for the Ornstein-Uhlenbeck process. Default is 0.15.
+            - dt (float, optional): The time step for the Ornstein-Uhlenbeck process. Default is 1e-2.
+            - x_initial (float, optional): The initial value of the noise. Default is None.
 
          Returns:
-            None
+            - None
         """
         self.theta = theta
         self.mean = mean
@@ -27,10 +27,10 @@ class OUActionNoise:
         Generate noise using the Ornstein-Uhlenbeck process.
 
         Parameters:
-            None
+            - None
 
         Returns:
-            x (numpy.ndarray): The generated noise.
+            - x (numpy.ndarray): The generated noise.
         """
         # Formula taken from https://www.wikipedia.org/wiki/Ornstein-Uhlenbeck_process.
         x = (
@@ -50,10 +50,10 @@ class OUActionNoise:
         Otherwise, sets `x_prev` to an array of zeros with the same shape as `mean`.
 
         Parameters: 
-            None
+            - None
 
         Returns:
-            None
+            - None
         """
         if self.x_initial is not None:
             self.x_prev = self.x_initial

@@ -13,13 +13,13 @@ class DDPGAgent:
         Initializes the DDPG agent.
 
         Parameters:
-            action_space (gym.Space): The action space of the environment.
-            observation_shape (tuple): The shape of the observation space.
-            gamma (float, optional): The discount factor. Defaults to 0.99.
-            tau (float, optional): The target network weight adaptation factor. Defaults to 0.001.
-            epsilon (float, optional): The exploration factor. Defaults to 0.05.
+            - action_space (gym.Space): The action space of the environment.
+            - observation_shape (tuple): The shape of the observation space.
+            - gamma (float, optional): The discount factor. Defaults to 0.99.
+            - tau (float, optional): The target network weight adaptation factor. Defaults to 0.001.
+            - epsilon (float, optional): The exploration factor. Defaults to 0.05.
         Returns:
-            None
+            - None
         """
         self.action_space = action_space
         self.tau = tau
@@ -46,12 +46,12 @@ class DDPGAgent:
         Sets the noise parameters for the action noise.
 
         Parmeters:
-            sigma (float): The standard deviation of the noise.
-            theta (float): The rate of mean reversion for the noise.
-            dt (float): The time step size.
+            - sigma (float): The standard deviation of the noise.
+            - theta (float): The rate of mean reversion for the noise.
+            - dt (float): The time step size.
 
         Returns:
-            None
+            - None
         """
         self.noise = OUActionNoise(mean=np.zeros(np.array(self.action_space.sample()).shape), std_deviation=float(sigma)*np.ones(1), theta=theta, dt=dt)
 
@@ -60,10 +60,10 @@ class DDPGAgent:
         Initializes the actor and critic networks with the given observation shape.
 
         Parameters:
-            observation_shape (int): The shape of the observation input.
+            - observation_shape (int): The shape of the observation input.
 
         Returns:
-            None
+            - None
         """
         initial_state = np.zeros([1, observation_shape])
 
@@ -83,12 +83,12 @@ class DDPGAgent:
         Update the target model weights using a soft update strategy.
 
         Parameters:
-            model_target (tf.keras.Model): The target model to be updated.
-            model_ref (tf.keras.Model): The reference model whose weights will be used for the update.
-            tau (float): The interpolation parameter for the update. Default is 0.0, which means a hard update.
+            - model_target (tf.keras.Model): The target model to be updated.
+            - model_ref (tf.keras.Model): The reference model whose weights will be used for the update.
+            - tau (float): The interpolation parameter for the update. Default is 0.0, which means a hard update.
 
         Returns:
-            None
+            - None
         """
         new_weights = [tau * ref_weight + (1 - tau) * target_weight for (target_weight, ref_weight) in
                     list(zip(model_target.get_weights(), model_ref.get_weights()))] # new weights are a linear combination of the target and reference weights
@@ -99,12 +99,12 @@ class DDPGAgent:
         Selects an action based on the given observation.
 
         Parameters:
-            observation (numpy.ndarray): The observation of the environment.
-            explore (bool): Whether to explore or exploit the policy. Default is True.
-            random_action (bool): Whether to select a random action. Default is False.
+            - observation (numpy.ndarray): The observation of the environment.
+            - explore (bool): Whether to explore or exploit the policy. Default is True.
+            - random_action (bool): Whether to select a random action. Default is False.
 
         Returns:
-            a (numpy.ndarray): The selected action.
+            - a (numpy.ndarray): The selected action.
         """
         if random_action or np.random.uniform(0, 1) < self.epsilon:
             a = self.action_space.sample()
@@ -120,12 +120,12 @@ class DDPGAgent:
         Computes the target Q-values for the DDPG algorithm.
 
         Parameters:
-            rewards (torch.Tensor): The rewards received from the environment.
-            next_states (torch.Tensor): The next states observed from the environment.
-            dones (torch.Tensor): The done flags indicating whether the episode has terminated or truncated.
+            - rewards (torch.Tensor): The rewards received from the environment.
+            - next_states (torch.Tensor): The next states observed from the environment.
+            - dones (torch.Tensor): The done flags indicating whether the episode has terminated or truncated.
 
         Returns:
-            target_q (torch.Tensor): The target Q-values.
+            - target_q (torch.Tensor): The target Q-values.
         """
         actions = self.target_actor(next_states)
         critic_input = {'action': actions, 'state': next_states}
@@ -138,11 +138,11 @@ class DDPGAgent:
         Calculates the gradients and the loss of the actor network with respect to the states.
 
         Parameters:
-            states (tf.Tensor): The input states.
+            - states (tf.Tensor): The input states.
 
         Returns:
-            gradients (List[tf.Tensor]): The gradients of the actor network.
-            loss (tf.Tensor): The loss value.
+            - gradients (List[tf.Tensor]): The gradients of the actor network.
+            - loss (tf.Tensor): The loss value.
         """
         with tf.GradientTape() as tape: # GradientTape saves all operations performed on variables
             actions = self.actor(states) # forward pass with the states outputs the actions according to the policy actor not target_actor
@@ -158,15 +158,15 @@ class DDPGAgent:
         Update the actor and critic networks based on the given batch of experiences.
 
         Parameters:
-            states (ndarray): The current states of the environment.
-            actions (ndarray): The actions taken in the current states.
-            rewards (ndarray): The rewards received for the actions taken.
-            next_states (ndarray): The next states of the environment.
-            dones (ndarray): The done flags indicating whether the episode is finished.
+            - states (ndarray): The current states of the environment.
+            - actions (ndarray): The actions taken in the current states.
+            - rewards (ndarray): The rewards received for the actions taken.
+            - next_states (ndarray): The next states of the environment.
+            - dones (ndarray): The done flags indicating whether the episode is finished.
 
         Returns:
-            actor_loss (float): The loss value of the actor network.
-            critic_loss (float): The loss value of the critic network.
+            - actor_loss (float): The loss value of the actor network.
+            - critic_loss (float): The loss value of the critic network.
         """
         target_qs = self.compute_target_q(rewards, next_states, dones) # Calculate target Q values from replay buffer
 
@@ -183,10 +183,10 @@ class DDPGAgent:
         Update the target networks by copying the weights from the output networks.
 
         Parameters:
-            None
+            - None
 
         Returns:
-            None
+            - None
         """
         DDPGAgent.update_target(self.target_critic, self.critic, self.tau)
         DDPGAgent.update_target(self.target_actor, self.actor, self.tau)
@@ -197,10 +197,10 @@ class DDPGAgent:
         The weights are saved in separate files using the current timestamp as the directory name.
 
         Parameters:
-            None
+            - None
 
         Returns:
-            None
+            - None
         """
         if self.save_dir is None:
             now = datetime.now()
@@ -220,12 +220,12 @@ class DDPGAgent:
         Loads the weights of the DDPG agent from a specified directory.
 
         Parameters:
-            use_latest (bool): If True, loads the weights from the latest directory in the weights_path.
-            load_dir (str): The directory path from which to load the weights.
-            lock_weights (bool): If True, locks the trainable status of the actor and critic models.
+            - use_latest (bool): If True, loads the weights from the latest directory in the weights_path.
+            - load_dir (str): The directory path from which to load the weights.
+            - lock_weights (bool): If True, locks the trainable status of the actor and critic models.
 
         Returns:
-            None
+            - None
         """
         if use_latest:
             load_dir = os.path.join(cfg.DDPGAgent.weights_path,max(os.listdir(cfg.TD3Agent.weights_path))) + "/"
