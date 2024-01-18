@@ -6,9 +6,8 @@ from functions import compute_avg_return
 import pandas as pd
 
 # Specify the path to the to be evaluated model
-
-load_dir    = None     #Specify the path to the model you want to evaluate. For more information: see Mapping_mod-conf.md
-use_latest  = True   #True, if you want to use the latest checkpoint of trained models
+load_dir    = None    #Specify the path to the model you want to evaluate. For more information: see Mapping_mod-conf.md
+use_latest  = True    #True, if you want to use the latest checkpoint of trained models
     
 
 def enjoy(agent_type:str, load_dir:str=None, use_latest:str=True, render_mode:str=None):  #defaults: agent_type="td3", load_dir=None, use_latest=True, render_mode=None
