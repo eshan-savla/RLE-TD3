@@ -10,19 +10,17 @@ import pandas as pd
 #True, if you want to use the latest checkpoint of trained models
     
 
-def enjoy(agent_type:str="td3", load_dir:str=None, use_latest:str=True, render_mode:str=None):
-    """
-    Function to enjoy a trained agent in the gym environment.
+def enjoy(agent_type:str, load_dir:str=None, use_latest:str=True, render_mode:str=None):  #defaults: agent_type="td3", load_dir=None, use_latest=True, render_mode=None
+    """_summary_
+    This function allows you to enjoy a trained agent in the environment.
 
-    Parameters:
-        - agent_type (str): Type of the agent to enjoy. Options: "td3" (default), "ddpg".
-        - load_dir (str): Directory path to load the weights of the agent from.
-        - use_latest (str): Whether to use the latest saved weights. Options: True (default), False.
-        - render_mode (str): Rendering mode for the environment. Options: None (default), "human", "rgb_array".
-
-    Returns:
-        - None
+    Args:
+        agent_type (str): Specify the agent type you want to enjoy. Options: "ddpg" or "td3"
+        load_dir (str, optional): Defaults to None.
+        use_latest (str, optional): Defaults to True.
+        render_mode (str, optional): 'human'  => render the environment visually // render_mode='rgb_array' => render the environment as an array to collect results. Default = None.
     """
+    os.chdir(os.path.dirname(os.path.abspath(__file__)))                    # change directory to the directory of this file
     env = gym.make(id='Ant-v3', autoreset=True, render_mode = render_mode)  # create the environment 
                                                                                 # id = Environment ID 
                                                                                 # autoreset=True => automatically reset the environment after an episode is done

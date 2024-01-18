@@ -16,22 +16,28 @@ class Critic(tf.keras.layers.Layer):
             - None
         """
         super(Critic, self).__init__(**kwargs)
+    """_summary_:
+    This class implements the Critic Network.
+    The critic networks takes the states and actions as input and outputs the estimated q-values.
+    """
+    def __init__(self, state_units=(400, 300), action_units=(300,), units=(150,), stddev=0.00005, **kwargs): #initialize the Critic network with a default size of 400, 300, 150
+        super(Critic, self).__init__(**kwargs) #initialize the super class
         self.layers_state = []
-        for u in state_units:
+        for u in state_units: #for loop for the state units
             self.layers_state.append(tf.keras.layers.Dense(u, activation=tf.nn.leaky_relu,
-                                                            kernel_initializer=tf.keras.initializers.glorot_normal())) # Layers for states
+                                                           kernel_initializer=tf.keras.initializers.glorot_normal())) # create layers for the states
 
         self.layers_action = []
-        for u in action_units:
+        for u in action_units: #for loop for the action units
             self.layers_action.append(tf.keras.layers.Dense(u, activation=tf.nn.leaky_relu,
-                                                            kernel_initializer=tf.keras.initializers.glorot_normal()))  # Layers for actions
+                                                            kernel_initializer=tf.keras.initializers.glorot_normal()))  # create layers for the actions
 
         self.layers = []
-        for u in units:
+        for u in units: #for loop for the units
             self.layers.append(tf.keras.layers.Dense(u, activation=tf.nn.leaky_relu,
-                                                        kernel_initializer=tf.keras.initializers.glorot_normal())) # Layers for q-values
-        last_init = tf.random_normal_initializer(stddev=stddev) 
-        self.layers.append(tf.keras.layers.Dense(1, kernel_initializer=last_init)) # last layer which outputs the Q-value
+                                                     kernel_initializer=tf.keras.initializers.glorot_normal())) # create layers for the qvalues
+        last_init = tf.random_normal_initializer(stddev=stddev)  # initialize the last layer with a random normal initializer
+        self.layers.append(tf.keras.layers.Dense(1, kernel_initializer=last_init)) # letzte Layer welche den Q-Wert ausgibt 
 
         self.add = tf.keras.layers.Add()
          
@@ -50,11 +56,11 @@ class Critic(tf.keras.layers.Layer):
         p_action = inputs['action']
         p_state = inputs['state']
 
-        for l in self.layers_action:
-            p_action = l(p_action) # forward pass for actions
+        for l in self.layers_action: #for loop for the action layers
+            p_action = l(p_action) # forward pass für die Actions
 
-        for l in self.layers_state:
-            p_state = l(p_state) # forward pass for states
+        for l in self.layers_state: #for loop for the state layers
+            p_state = l(p_state) # forward pass für die States
 
         outputs = self.add([p_state, p_action])
         for l in self.layers:

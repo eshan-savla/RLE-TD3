@@ -24,28 +24,33 @@ def compute_avg_return(env, agent, num_episodes=1, max_steps=1000, render=False)
     returns = []
     stddevs = []   
     
-    max_steps = max_steps * num_episodes
+    max_steps = max_steps * num_episodes 
+    total_steps = 0
 
     for e in range(num_episodes):   #iterate through multiple episodes
 
-        obs, _ = env.reset()
-        episode_return = 0.0
+        obs, _ = env.reset()     #reset environment and get initial observation
+
+        #initialize episode return, terminated, truncated, steps and done
+        episode_return = 0.0     
         terminated = False
         truncated = False
         steps = 0
         done = steps > max_steps
+
         while not (done):           #while steps < max_steps
             if render:              #render the environment if render = true (default = false)
                 env.render()
             action = agent.act(np.array([obs]),explore=False)       #get action from agent network
             obs, r, terminated, truncated, info = env.step(action)  #execute action and get new observation, reward, terminated, truncated and info
             done = terminated or truncated                          #set done to True if action triggered termination or truncation
-            if steps >= max_steps:            
-                    episode_truncated = not done or info.get("TimeLimit.truncated", False)     
-                    info["TimeLimit.truncated"] = episode_truncated
+            
+            if steps >= max_steps: #if max_steps is reached           
+                    episode_truncated = not done or info.get("TimeLimit.truncated", False)     #check if episode was truncated
+                    info["TimeLimit.truncated"] = episode_truncated                           
                     # truncated may have been set by the env too
                     truncated = truncated or episode_truncated
-                    done = terminated or truncated
+                    done = terminated or truncated      #set done to True if action triggered termination or truncation
             episode_return += r     #add received reward to episode return
             steps += 1              #increment steps
         
@@ -75,7 +80,7 @@ def flatten(lst):
         - result (list): The flattened list.
     """
     result = []
-    for i in lst:
+    for i in lst: 
         if isinstance(i, list):
             result.extend(flatten(i))
         else:

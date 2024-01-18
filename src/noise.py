@@ -15,6 +15,17 @@ class OUActionNoise:
          Returns:
             - None
         """
+    """_summary_:
+    This class implements Output Action Noise. 
+
+    Args
+        mean: (numpy array) mean of the noise
+        std_deviation: (numpy array) standard deviation of the noise
+        theta: (float) theta value of the noise
+        dt: (float) time interval
+        x_initial: (numpy array) initial value of the noise       
+    """
+    def __init__(self, mean, std_deviation, theta=0.15, dt=1e-2, x_initial=None): #initialize the Output Action Noise
         self.theta = theta
         self.mean = mean
         self.std_dev = std_deviation
@@ -38,8 +49,7 @@ class OUActionNoise:
                 + self.theta * (self.mean - self.x_prev) * self.dt
                 + self.std_dev * np.sqrt(self.dt) * np.random.normal(size=self.mean.shape)
         )
-        # Store x into x_prev
-        # Makes next noise dependent on current one
+        # Store x into x_prev => Makes next noise dependent to the current one
         self.x_prev = x
         return x
 

@@ -15,8 +15,13 @@ class Actor(tf.keras.layers.Layer):
             - None
         """
         super(Actor, self).__init__(**kwargs)
+    """_summary_:
+    This class implements the Actor Network.
+    """
+    def __init__(self, units=(400, 300), n_actions=2, stddev=0.00005, **kwargs): #initialize the Actor Network with a default size of 400 and 300
+        super(Actor, self).__init__(**kwargs) #initialize the super class
         self.layers = []
-        for i, u in enumerate(units):
+        for i, u in enumerate(units): # for loop for the layers
             self.layers.append(tf.keras.layers.Dense(u, activation=tf.nn.leaky_relu,
                                                         kernel_initializer=tf.keras.initializers.glorot_normal())) # two layers with neurons
         last_init = tf.random_normal_initializer(stddev=stddev)
