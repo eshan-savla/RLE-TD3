@@ -39,7 +39,7 @@ class Critic(tf.keras.layers.Layer):
         """
         Forward pass of the critic network.
 
-        Args:
+        Parameters:
             inputs (dict): Dictionary containing the input tensors.
                 - 'action': Tensor representing the action input.
                 - 'state': Tensor representing the state input.

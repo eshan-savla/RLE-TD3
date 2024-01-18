@@ -2,13 +2,29 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 def compute_avg_return(env, agent, num_episodes=1, max_steps=1000, render=False):
+    """
+    Computes the average return and standard deviation of returns for a given agent in a given environment.
+
+    Parameters:
+        env (object): The environment object.
+        agent (object): The agent object.
+        num_episodes (int, optional): The number of episodes to run. Defaults to 1.
+        max_steps (int, optional): The maximum number of steps per episode. Defaults to 1000.
+        render (bool, optional): Whether to render the environment. Defaults to False.
+
+    Returns:
+        avg_return (float): The average return.
+        avg_return_stddev (float): The standard deviation of returns.
+        episode_no (list): The episode numbers.
+        returns (list): The returns for each episode.
+        stddevs (list): The standard deviations of returns for each episode.
+    """
     total_return = 0.0
     episode_no = []
     returns = []
     stddevs = []   
     
     max_steps = max_steps * num_episodes
-    total_steps = 0
 
     for e in range(num_episodes):   #iterate through multiple episodes
 
@@ -48,9 +64,16 @@ def compute_avg_return(env, agent, num_episodes=1, max_steps=1000, render=False)
     return avg_return, avg_return_stddev, episode_no, returns, stddevs
 
 
-
-# Calculate the mean standard deviation per episode over all experiments
 def flatten(lst):
+    """
+    Recursively flattens a nested list. -> Calculate the mean standard deviation per episode over all experiments
+
+    Args:
+        lst (list): The list to be flattened.
+
+    Returns:
+        result (list): The flattened list.
+    """
     result = []
     for i in lst:
         if isinstance(i, list):
