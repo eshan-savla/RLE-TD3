@@ -6,13 +6,23 @@ from functions import compute_avg_return
 import pandas as pd
 
 # Specify the path to the to be evaluated model
-load_dir    = None    #Specify the path to the model you want to evaluate. For more information: see Mapping_mod-conf.md
-use_latest  = True    #True, if you want to use the latest checkpoint of trained models
+#Specify the path to the model you want to evaluate. For more information: see Mapping_mod-conf.md
+#True, if you want to use the latest checkpoint of trained models
     
 
-def enjoy(agent_type:str, load_dir:str=None, use_latest:str=True, render_mode:str=None):  #defaults: agent_type="td3", load_dir=None, use_latest=True, render_mode=None
+def enjoy(agent_type:str="td3", load_dir:str=None, use_latest:str=True, render_mode:str=None):
+    """
+    Function to enjoy a trained agent in the gym environment.
 
-    os.chdir(os.path.dirname(os.path.abspath(__file__)))                    # change directory to the directory of this file
+    Parameters:
+        - agent_type (str): Type of the agent to enjoy. Options: "td3" (default), "ddpg".
+        - load_dir (str): Directory path to load the weights of the agent from.
+        - use_latest (str): Whether to use the latest saved weights. Options: True (default), False.
+        - render_mode (str): Rendering mode for the environment. Options: None (default), "human", "rgb_array".
+
+    Returns:
+        - None
+    """
     env = gym.make(id='Ant-v3', autoreset=True, render_mode = render_mode)  # create the environment 
                                                                                 # id = Environment ID 
                                                                                 # autoreset=True => automatically reset the environment after an episode is done
