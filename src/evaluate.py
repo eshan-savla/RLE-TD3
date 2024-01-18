@@ -2,23 +2,23 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import ast
-
 from functions import flatten
 import datetime
 import numpy as np
 import datetime
 from scipy import stats
-import os
-
-
-#Set the path to the csv file to evaluate the benchmark results
-data_path_csv = './benchmarks_td3_test_hp.csv'
-
-# Set the path to the csv file to evaluate the training results
-training_data_path_csv = 'models/ddpg_gt/ddpg_results.csv'
 
 def evaluate_enjoy(data_path_csv:str = 'benchmarks_test.csv', plot_type: str = 'bar', only_avgs:bool = False):
+    """
+    Evaluate and visualize the performance of different configurations based on the data in a CSV benachmark file.
 
+    Parameters:
+        - data_path_csv (str): The path to the CSV file containing the data. Default is 'benchmarks_test.csv'.
+        - plot_type (str): The type of plot to generate. Options are 'bar' and 'line'. Default is 'bar'.
+        - only_avgs (bool): Whether to only plot the average returns or also the individual returns. Default is False.
+    Returns:
+        - None
+    """
     # Read the data from the CSV file
     data = pd.read_csv(data_path_csv) #'benchmarks_test.csv'
     avg_return = data['avg_return']
@@ -102,7 +102,16 @@ def evaluate_enjoy(data_path_csv:str = 'benchmarks_test.csv', plot_type: str = '
         fig.savefig(f'{timestamp}_avg_return_per_config.png')
 
 
-def evaluate_training(training_data_path_csv = training_data_path_csv):
+def evaluate_training(training_data_path_csv):
+    """
+    Evaluate the training by plotting the actor and critic losses over time.
+
+    Parameters:
+        - training_data_path_csv (str): The file path to the training data in CSV format.
+
+    Returns:
+        - None
+    """
     # Load the training data from the CSV file
     training_data = pd.read_csv(training_data_path_csv)
     # Plot actor loss over time
@@ -177,11 +186,5 @@ def evaluate_training(training_data_path_csv = training_data_path_csv):
 
 
 if __name__ == "__main__":
-    # evaluate_enjoy(data_path_csv=data_path_csv)
-    evaluate_training(training_data_path_csv=training_data_path_csv)
-
-  
-
- 
-
-
+    evaluate_enjoy(data_path_csv="")
+    evaluate_training(training_data_path_csv="")
