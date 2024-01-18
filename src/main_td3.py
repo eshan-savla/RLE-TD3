@@ -15,8 +15,16 @@ from td3 import TD3Agent
 from replay_buffer import ReplayBuffer
 from functions import compute_avg_return
 
-def main():
-    load_replay_buffer = True
+def main(load_replay_buffer:bool = True):
+    """
+    The main function for running the TD3 training algorithm.
+
+    Parameters:
+        - load_replay_buffer (bool): Whether to load the replay buffer from a checkpoint. Default is True.
+
+    Returns:
+        - None
+    """
     physical_devices = tf.config.list_physical_devices('GPU') 
     for device in physical_devices:
         tf.config.experimental.set_memory_growth(device, True)
@@ -123,6 +131,6 @@ def main():
 
     
 if __name__ == "__main__":
-    elapsed_time = timeit.timeit(main, number=1)
+    elapsed_time = timeit.timeit(lambda: main(load_replay_buffer=True), number=1)
     minutes, seconds = divmod(elapsed_time, 60)
     print(f"The main function ran for {int(minutes)} minutes and {seconds:.2f} seconds.")

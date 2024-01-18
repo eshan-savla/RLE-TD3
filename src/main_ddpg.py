@@ -15,8 +15,15 @@ from tqdm import tqdm
 
 
 
-def main():
-    load_replay_buffer = True
+def main(load_replay_buffer:bool = True):
+    """
+    Main function for running the DDPG training algorithm.
+
+    Parameters:
+        - load_replay_buffer (bool): Flag indicating whether to load the replay buffer. Default is True.
+    Returns:
+        - None
+    """
     physical_devices = tf.config.list_physical_devices('GPU') 
     for device in physical_devices:
         tf.config.experimental.set_memory_growth(device, True)
@@ -117,6 +124,6 @@ def main():
 
     
 if __name__ == "__main__":
-    elapsed_time = timeit.timeit(main, number=1)
+    elapsed_time = timeit.timeit(lambda: main(load_replay_buffer=True), number=1)
     minutes, seconds = divmod(elapsed_time, 60)
     print(f"The main function ran for {int(minutes)} minutes and {seconds:.2f} seconds.")
