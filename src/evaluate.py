@@ -14,7 +14,7 @@ import os
 data_path_csv = './benchmarks_td3_test_hp.csv'              #path to the csv file to evaluate the benchmark results
 training_data_path_csv = 'models/ddpg_gt/ddpg_results.csv'  #path to the csv file to evaluate the training results
 
-def evaluate_enjoy(data_path_csv:str = data_path_csv, plot_type: str = 'bar', only_avgs:bool = False):
+def evaluate_enjoy(data_path_csv:str = data_path_csv, plot_type: str = 'bar', plot_avgs:bool = False, plot_timeseries:bool = False):
     """_summary_
     This function allows you to evaluate the enjoy phase of a trained model based on the benchmark results of the different agents.
 
@@ -65,14 +65,16 @@ def evaluate_enjoy(data_path_csv:str = data_path_csv, plot_type: str = 'bar', on
             label = f' {row["agent_type"]}-{row["config_name"]}'
             label_means = f'{row["agent_type"]}-{row["config_name"]}-mean'
             
-            if not only_avgs:
+            if plot_timeseries:
                 ax.plot(episode_no, returns, label=label)
-            ax.plot(episode_no, [row["avg_return"] for i in range(len(returns))], label=label_means)
+            if plot_avgs:
+                ax.plot(episode_no, [row["avg_return"] for i in range(len(returns))], label=label_means)
             
             # Add a subplot using fill_between
-            if not only_avgs:
+            if plot_timeseries:
                 ax.fill_between(episode_no, np.array(returns) + np.array(stddevs), np.array(returns) - np.array(stddevs), alpha=0.3)
-            ax.fill_between(episode_no, np.array([row["avg_return"] for i in range(len(returns))]) + np.array([row["avg_return_stddev"] for i in range(len(returns))]), np.array([row["avg_return"] for i in range(len(returns))]) - np.array([row["avg_return_stddev"] for i in range(len(returns))]), alpha=0.3)
+            if plot_avgs:
+                ax.fill_between(episode_no, np.array([row["avg_return"] for i in range(len(returns))]) + np.array([row["avg_return_stddev"] for i in range(len(returns))]), np.array([row["avg_return"] for i in range(len(returns))]) - np.array([row["avg_return_stddev"] for i in range(len(returns))]), alpha=0.3)
 
         # Set the labels and title and legend
         ax.set_xlabel('Episode')
