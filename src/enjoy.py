@@ -10,7 +10,7 @@ import pandas as pd
 #True, if you want to use the latest checkpoint of trained models
     
 
-def enjoy(agent_type:str, load_dir:str=None, use_latest:str=True, render_mode:str=None):  #defaults: agent_type="td3", load_dir=None, use_latest=True, render_mode=None
+def enjoy(agent_type:str, load_dir:str=None, use_latest:str=True, render:bool=True):  #defaults: agent_type="td3", load_dir=None, use_latest=True, render_mode=None
     """_summary_
     This function allows you to enjoy a trained agent in the environment.
 
@@ -18,9 +18,10 @@ def enjoy(agent_type:str, load_dir:str=None, use_latest:str=True, render_mode:st
         agent_type (str): Specify the agent type you want to enjoy. Options: "ddpg" or "td3"
         load_dir (str, optional): Defaults to None.
         use_latest (str, optional): Defaults to True.
-        render_mode (str, optional): 'human'  => render the environment visually // render_mode='rgb_array' => render the environment as an array to collect results. Default = None.
+        render (bool, optional): True  => render the environment visually // False => Run enjoy without environement and agent rendering. Defaults to True.
     """
     os.chdir(os.path.dirname(os.path.abspath(__file__)))                    # change directory to the directory of this file
+    render_mode = "human" if render else "rgb_array"
     env = gym.make(id='Ant-v3', autoreset=True, render_mode = render_mode)  # create the environment 
                                                                                 # id = Environment ID 
                                                                                 # autoreset=True => automatically reset the environment after an episode is done
@@ -51,4 +52,4 @@ def enjoy(agent_type:str, load_dir:str=None, use_latest:str=True, render_mode:st
     env.close()
 
 if __name__ == '__main__':
-    enjoy("td3")             #speficy the desired algorithm/ agent type ("ddpg" or "td3")
+    enjoy("td3", render=False)             #speficy the desired algorithm/ agent type ("ddpg" or "td3")
