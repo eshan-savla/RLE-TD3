@@ -1,7 +1,7 @@
 import tensorflow as tf
 
 class Actor(tf.keras.layers.Layer):
-    def __init__(self, units=(400, 300), n_actions=2, stddev=0.00005, **kwargs):
+    def __init__(self, units=(400, 300), n_actions=2, stddev=0.00005, **kwargs): #initialize the Actor Network with a default size of 400 and 300
         """
         Initialize the Actor network.
 
@@ -14,11 +14,6 @@ class Actor(tf.keras.layers.Layer):
         Returns:
             - None
         """
-        super(Actor, self).__init__(**kwargs)
-    """_summary_:
-    This class implements the Actor Network.
-    """
-    def __init__(self, units=(400, 300), n_actions=2, stddev=0.00005, **kwargs): #initialize the Actor Network with a default size of 400 and 300
         super(Actor, self).__init__(**kwargs) #initialize the super class
         self.layers = []
         for i, u in enumerate(units): # for loop for the layers
