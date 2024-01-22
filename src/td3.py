@@ -120,6 +120,27 @@ class TD3Agent:
         return target_q
     
     @staticmethod
+    def get_critic_grads(states, actions, target_qs, critic):
+
+        """_summary_:
+        Calcualation of gradients and loss for critic network by a compution q-values and estimated q-values.
+        The loss is calucatted by the mean absolute difference between target Q-values and estimated q-values.
+        The gradients are calculated by using the loss and the trainable variables of the critic network.
+        They are clipped to prevent extreme values in rise/ falls of the gradients.
+
+        Returns:
+            gradients: gradients of the critic network
+            loss: loss of the critic network
+        """
+
+        with tf.GradientTape() as tape: 
+            critic_input = {'action': actions, 'state': states} # kommt aus Replay Buffer
+            qs = critic(critic_input) # forward pass mit den Actions und States gibt die Q-Werte aus critic nicht target_critic
+            loss = tf.reduce_mean(tf.abs(target_qs - qs)) # loss ist der Durchschnitt der absoluten Differenz zwischen den Q-Werten und den target Q-Werten. 
+        gradients = tape.gradient(loss, critic.trainable_variables) # Partielle Ableitung
+        gradients = [tf.clip_by_value(grad, -1.0, 1.0) for grad in gradients]  #gradient clipping as part of Clipped Double Q-Learning
+        return gradients, loss
+
     def get_actor_grads(self, states, target_critic):    #use target critic insted of regular critic to stabilize learning process and soften issue of overestimation bias
         """
         Calculates the gradients of the actor network with respect to the states and target critic.

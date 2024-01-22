@@ -153,6 +153,15 @@ class DDPGAgent:
         gradients = [tf.clip_by_value(grad, -1.0, 1.0) for grad in gradients] # Clip gradients to prevent the gradients from becoming too large
         return gradients, loss
 
+    def get_critic_grads(self, states, actions, target_qs):
+        with tf.GradientTape() as tape: 
+            critic_input = {'action': actions, 'state': states} # kommt aus Replay Buffer
+            qs = self.critic(critic_input) # forward pass mit den Actions und States gibt die Q-Werte aus critic nicht target_critic
+            loss = tf.reduce_mean(tf.abs(target_qs - qs)) # loss ist der Durchschnitt der absoluten Differenz zwischen den Q-Werten und den target Q-Werten. 
+        gradients = tape.gradient(loss, self.critic.trainable_variables) # Partielle Ableitung
+        gradients = [tf.clip_by_value(grad, -1.0, 1.0) for grad in gradients]
+        return gradients, loss
+
     def learn(self, states, actions, rewards, next_states, dones):
         """
         Update the actor and critic networks based on the given batch of experiences.
