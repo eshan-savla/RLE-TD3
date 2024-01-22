@@ -1,7 +1,7 @@
 import tensorflow as tf
 
 class Critic(tf.keras.layers.Layer):
-    def __init__(self, state_units=(400, 300), action_units=(300,), units=(150,), stddev=0.00005, **kwargs):
+    def __init__(self, state_units=(400, 300), action_units=(300,), units=(150,), stddev=0.00005, **kwargs): #initialize the Critic network with a default size of 400, 300, 150
         """
         Initializes the Critic class.
 
@@ -15,12 +15,6 @@ class Critic(tf.keras.layers.Layer):
         Returns:
             - None
         """
-        super(Critic, self).__init__(**kwargs)
-    """_summary_:
-    This class implements the Critic Network.
-    The critic networks takes the states and actions as input and outputs the estimated q-values.
-    """
-    def __init__(self, state_units=(400, 300), action_units=(300,), units=(150,), stddev=0.00005, **kwargs): #initialize the Critic network with a default size of 400, 300, 150
         super(Critic, self).__init__(**kwargs) #initialize the super class
         self.layers_state = []
         for u in state_units: #for loop for the state units
