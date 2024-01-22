@@ -11,14 +11,16 @@ import pandas as pd
     
 
 def enjoy(agent_type:str, load_dir:str=None, use_latest:str=True, render:bool=True, num_episodes:int=150):  #defaults: agent_type="td3", load_dir=None, use_latest=True, render_mode=None
-    """_summary_
+    """
     This function allows you to enjoy a trained agent in the environment.
 
-    Args:
+    Parameters:
         agent_type (str): Specify the agent type you want to enjoy. Options: "ddpg" or "td3"
         load_dir (str, optional): Defaults to None.
         use_latest (str, optional): Defaults to True.
         render (bool, optional): True  => render the environment visually // False => Run enjoy without environement and agent rendering. Defaults to True.
+    Returns:
+        - None
     """
     os.chdir(os.path.dirname(os.path.abspath(__file__)))                    # change directory to the directory of this file
     render_mode = "human" if render else "rgb_array"

@@ -15,16 +15,18 @@ data_path_csv = './benchmarks_td3_test_hp.csv'              #path to the csv fil
 training_data_path_csv = 'models/ddpg_gt/ddpg_results.csv'  #path to the csv file to evaluate the training results
 
 def evaluate_enjoy(data_path_csv:str, plot_type: str = 'bar', plot_avgs:bool = False, plot_timeseries:bool = False, **kwargs):
-    """_summary_
+    """
     This function allows you to evaluate the enjoy phase of a trained model based on the benchmark results of the different agents.
 
-    Args:
+    Parameters:
         data_path_csv (str, optional): _description_. Specify the path to the csv file
         plot_type (str, optional): _description_. Specify the plot_type for the graph. Default = 'bar'.
         only_avgs (bool, optional): _description_. Default = False.
         plot_title (str, optional): _description_. Specify plot tile. Default = None
         x_axis_title (str, optional): _description_. Specify title of x axis. Default = None
         y_axis_title (str, optional): _description_. Specify title of y axis. Default = None
+    Returns:
+        - None
     """
     plot_title = kwargs.get("plot_title", "Returns per Episode for different configurations")
     x_axis_title = kwargs.get("x_axis_title", "Episode")
