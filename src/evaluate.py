@@ -14,7 +14,7 @@ import os
 data_path_csv = './benchmarks_td3_test_hp.csv'              #path to the csv file to evaluate the benchmark results
 training_data_path_csv = 'models/ddpg_gt/ddpg_results.csv'  #path to the csv file to evaluate the training results
 
-def evaluate_enjoy(data_path_csv:str = data_path_csv, plot_type: str = 'bar', plot_avgs:bool = False, plot_timeseries:bool = False):
+def evaluate_enjoy(data_path_csv:str = data_path_csv, plot_type: str = 'bar', plot_avgs:bool = False, plot_timeseries:bool = False, **kwargs):
     """_summary_
     This function allows you to evaluate the enjoy phase of a trained model based on the benchmark results of the different agents.
 
@@ -22,8 +22,13 @@ def evaluate_enjoy(data_path_csv:str = data_path_csv, plot_type: str = 'bar', pl
         data_path_csv (str, optional): _description_. Specify the path to the csv file
         plot_type (str, optional): _description_. Specify the plot_type for the graph. Default = 'bar'.
         only_avgs (bool, optional): _description_. Default = False.
+        plot_title (str, optional): _description_. Specify plot tile. Default = None
+        x_axis_title (str, optional): _description_. Specify title of x axis. Default = None
+        y_axis_title (str, optional): _description_. Specify title of y axis. Default = None
     """
-
+    plot_title = kwargs.get("plot_title", "Returns per Episode for different configurations")
+    x_axis_title = kwargs.get("x_axis_title", "Episode")
+    y_axis_title = kwargs.get("y_axis_title", "Returns per Episode")
     # Read data from CSV file
     data = pd.read_csv(data_path_csv)
     
@@ -77,9 +82,9 @@ def evaluate_enjoy(data_path_csv:str = data_path_csv, plot_type: str = 'bar', pl
                 ax.fill_between(episode_no, np.array([row["avg_return"] for i in range(len(returns))]) + np.array([row["avg_return_stddev"] for i in range(len(returns))]), np.array([row["avg_return"] for i in range(len(returns))]) - np.array([row["avg_return_stddev"] for i in range(len(returns))]), alpha=0.3)
 
         # Set the labels and title and legend
-        ax.set_xlabel('Episode')
-        ax.set_ylabel('Returns per Episode')
-        ax.set_title('Returns per Episode for different configurations')
+        ax.set_xlabel(x_axis_title)
+        ax.set_ylabel(y_axis_title)
+        ax.set_title(plot_title)
         ax.legend()
                 
         # Save the plot with the unique timestamp in the file name
@@ -99,25 +104,31 @@ def evaluate_enjoy(data_path_csv:str = data_path_csv, plot_type: str = 'bar', pl
         fig.set_figwidth(25)
         ax.bar(X, Y, yerr=yerr, align='center', color=color[0:len(X)], ecolor='black', capsize=10)
         #set the labels (including ticks and it's parameter) and title
-        ax.set_title('Average Return per Configuration', fontsize=25)
-        ax.set_ylabel('Average Return', fontsize=25)
-        ax.set_xlabel('Configuration', fontsize=25)
+        ax.set_title(plot_title, fontsize=25)
+        ax.set_ylabel(y_axis_title, fontsize=25)
+        ax.set_xlabel(x_axis_title, fontsize=25)
         ax.set_xticklabels(X, rotation=45, fontsize=30)
         ax.tick_params(axis='y', labelsize=30)
         fig.tight_layout()
         fig.savefig(f'{timestamp}_avg_return_per_config.png') #save the figure
 
 
-def evaluate_training(training_data_path_csv):
+def evaluate_training(training_data_path_csv, **kwargs):
     """
     Evaluate the training by plotting the actor and critic losses over time.
 
     Parameters:
-        - training_data_path_csv (str): The file path to the training data in CSV format.
+        training_data_path_csv (str): The file path to the training data in CSV format.
+        plot_title (str, optional): The title of the plot. Default is None. Actor or critic will be inserted to title automatically
+        x_axis_title (str, optional): The title of the x-axis. Default is None.
+        y_axis_title (str, optional): The title of the y-axis. Default is None.
 
     Returns:
-        - None
+        None
     """
+    plot_title = kwargs.get("plot_title", "Losses over Time")
+    x_axis_title = kwargs.get("x_axis_title", "Timesteps x 1e5")
+    y_axis_title = kwargs.get("y_axis_title", "Loss")
     # Load the training data from the CSV file
     training_data = pd.read_csv(training_data_path_csv)
 
@@ -128,8 +139,8 @@ def evaluate_training(training_data_path_csv):
     plt.plot(X, training_data['actor_losses'], color = "blue",label='Actor Loss')
     
     # Set labels and title
-    plt.xlabel('Timesteps x 1e5', fontsize=30)
-    plt.ylabel('Actor Loss', fontsize=30)
+    plt.xlabel(x_axis_title, fontsize=30)
+    plt.ylabel(y_axis_title, fontsize=30)
     #plt.title('Actor Loss over Time', fontsize=30)
     
     # Visualize a trend line
@@ -144,7 +155,7 @@ def evaluate_training(training_data_path_csv):
 
     # Add legend
     plt.legend(fontsize=30)
-    plt.title('Actor Loss over Time', fontsize=30)
+    plt.title('Actor ' + plot_title, fontsize=30)
     plt.tight_layout()
 
     # Save plot
@@ -173,23 +184,23 @@ def evaluate_training(training_data_path_csv):
 
     # Calculate and plot trend line for critics losses
     # Critic 2
-    slope2, intercept2, r_value2, p_value2, std_err2 = stats.linregress(X, y2)
+    slope2, intercept2, _, _, _ = stats.linregress(X, y2)
     plt.plot(X, intercept2 + slope2*X, 'r--', label='Trend line 2', linewidth=6)
     plt.xticks(range(0,1000000, 100000), fontsize=30)
     plt.ticklabel_format(style='sci', axis='x', scilimits=(0,0))
     plt.tick_params(axis='y', labelsize=30)
 
     # Critic 1
-    slope1, intercept1, r_value1, p_value1, std_err1 = stats.linregress(X, y1)
+    slope1, intercept1, _, _, _ = stats.linregress(X, y1)
     plt.plot(X, intercept1 + X*slope1, 'r--', label='Trend line 1', linewidth=6)
     plt.xticks(range(0,1000000, 100000), fontsize=30)
     plt.tick_params(axis='y', labelsize=30)
     plt.ticklabel_format(style='sci', axis='x', scilimits=(0,0))
     
     # Set labels and title
-    plt.xlabel('Timesteps x 1e5', fontsize=30)
-    plt.ylabel('Loss', fontsize=30)
-    plt.title('Critic Loss over Time', fontsize=30)
+    plt.xlabel(x_axis_title, fontsize=30)
+    plt.ylabel(y_axis_title, fontsize=30)
+    plt.title('Critic ' + plot_title, fontsize=30)
 
     # Add a legend
     plt.legend(fontsize=30)
