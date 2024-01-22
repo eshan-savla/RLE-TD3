@@ -81,14 +81,11 @@ class TD3Agent:
         self.target_critic_1.set_weights(self.critic_1.get_weights())
         self.target_critic_2.set_weights(self.critic_2.get_weights())
 
-
-    def compute_target_q(self, rewards, next_states, dones, total_timesteps, reduce_noise: bool = False, noise_multiplicator:int = 5, min_noise_factor: float = 0.05): 
+    def compute_target_q(self, rewards, next_states, dones, total_timesteps, reduce_noise:bool = False, noise_multiplicator:int = 5, min_noise_factor:float = 0.05): 
         """
-        Computes the target Q-value for the TD3 algorithm.
-
-        _summary_:Double Q-Learning:
-        Applying the 2 critic network philosophy of TD3 to the target q-value calculation
-        Using the minimum of both q-values (expected cumulative reward) to reduce the overestimation bias as a parameter of the neural network
+        Computes the target q-value for the TD3 algorithm.
+        Applying the 2 critic network philosophy of TD3 to the target q-value calculation.
+        Using the minimum of both q-values (expected cumulative reward) to reduce the overestimation bias as a parameter of the neural network.
 
         Parameters:
             - rewards (numpy.ndarray): Array of rewards for each transition.
@@ -103,8 +100,8 @@ class TD3Agent:
             - target_q (numpy.ndarray): Array of target Q-values for each transition.
         """
         factor = 1
-        if reduce_noise:
-            factor = np.add(-np.exp(total_timesteps/cfg.Training.timesteps * noise_multiplicator), np.exp(noise_multiplicator))
+        if reduce_noise: 
+            factor = np.add(-np.exp(total_timesteps/cfg.Training.timesteps * noise_multiplicator), np.exp(noise_multiplicator)) #reduces noise by a factor which decreases exponentially over time
             factor = factor/np.exp(noise_multiplicator)
             if factor < min_noise_factor:
                 factor = min_noise_factor
@@ -118,8 +115,8 @@ class TD3Agent:
 
         #Evaluating both critics results and using the minimum of both
         next_q = np.minimum(next_q1, next_q2) #calculate the minimum to prevent overestimation bias
-        target_q = rewards + (1 - dones) * next_q * self.gamma    #calulated by using the Bellman equation representing the expected cumulative reward that an agent can achieve by taking action in given state by following a policy
-        
+        target_q = rewards + (1 - dones) * next_q * self.gamma #calulated by using the Bellman equation representing the expected cumulative reward that an agent can achieve 
+                                                               # by taking action in given state by following a policy
         return target_q
     
     @staticmethod
@@ -192,11 +189,11 @@ class TD3Agent:
         """
         target_qs = self.compute_target_q(rewards, next_states, dones, total_timesteps)
         critic_grads1, critics1_l = self.get_critic_grads(states, actions, target_qs, self.critic_1)
-        critic_grads2, critics2_l = self.get_critic_grads(states, actions, target_qs, self.critic_2)
-        self.critic_optimizer_1.apply_gradients(zip(critic_grads1, self.critic_1.trainable_variables))
-        self.critic_optimizer_2.apply_gradients(zip(critic_grads2, self.critic_2.trainable_variables))
+        critic_grads2, critics2_l = self.get_critic_grads(states, actions, target_qs, self.critic_2) 
+        self.critic_optimizer_1.apply_gradients(zip(critic_grads1, self.critic_1.trainable_variables)) 
+        self.critic_optimizer_2.apply_gradients(zip(critic_grads2, self.critic_2.trainable_variables)) 
 
-        if step % self.policy_freq == 0:
+        if step % self.policy_freq == 0: #update policy network and target networks every n-steps defined by policy_freq
             actor_grads, self.previous_actor_loss = self.get_actor_grads(states, self.target_critic_1)
             self.actor_optimizer.apply_gradients(zip(actor_grads, self.actor.trainable_variables))
             self.target_update()
@@ -217,11 +214,7 @@ class TD3Agent:
         TD3Agent.update_target(self.target_critic_1, self.critic_1, self.tau)
         TD3Agent.update_target(self.target_critic_2, self.critic_2, self.tau)
 
-
-    @staticmethod     
-    # Decorator is used to define a method that belongs to the class itself rather than an instance of the class. 
-    # It allows for the creation of utility functions or operations that are related to the class but do not require access to instance-specific data. 
-    # Their methods can be called directly on the class without the need for an instance
+    @staticmethod
     def update_target(model_target, model_ref, tau=0.005):
         """
         Update of the target networks can be done periodically by slowly blending their weights with the weights of the regular networks.
