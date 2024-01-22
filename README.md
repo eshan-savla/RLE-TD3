@@ -1,35 +1,55 @@
 # RLE-TD3
-Implemementation of the TD3 Reinforcment learning algorithm by Eshan Savla, Raphael Aberle and Leo Schäfer
+This repository is part of lectures "Robot programming" from Prof. Dr.-Ing. Björn Hein at University of Applied Science Karlsruhe. <br>
+It contains the implemementation of the TD3 Reinforcment learning algorithm by Eshan Savla, Raphael Aberle and Leo Schäfer. <br>
 
-The model was trained and tested using the Ant-v3 environment from mujoco using [OpenAI's Gymnasiums](https://gymnasium.farama.org/index.html)
 
-### Setting up the environement and installing dependencies.
+The models were trained and tested using the Ant-v3 environment from mujoco using [OpenAI's Gymnasiums](https://gymnasium.farama.org/index.html).
+
+## I. Setting up the environement and installing dependencies
 
 #### Setting up the python virtual environement under ubuntu:
+1. To create a virtual environement and install all necessary python packages run
+```
+./setup_env.bash
+```
 
+1. Alternatively, you can source the script to activate the environment in your current terminal
+```
+source setup_env.bash
+```
+2. Install the mujoco environement necessary for training, testing and visualizing results:
+```
+cd ~
+wget https://mujoco.org/download/mujoco210-linux-x86_64.tar.gz
+tar -xzf mujoco210-linux-x86_64.tar
+mkdir -p ~/.mujoco
+mv ~/mujoco210 ~/.mujoco/mujoco210
+echo "export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$HOME/.mujoco/mujoco210/bin" >> $HOME/.bashrc
+```
 
------> TODO: Explain the basic setup for a foreign repo user.
+### Training an Agent
+To manage configs we use [Hydra](https://hydra.cc/) and YAML files.
 
-
-
-## II. Test multiple configurations for the algorithm
-
-The configuration management is done via hydra. 
-You can find the different config files within the folder /configs.
-The config.yaml file is the ground truth file of configurations. 
-
+1. Use an exisiting config file or create your own with different hyperparameters in the **configs** folder
 
 ![Alt text](./documentation/images/Workflow_structure_overview.png)
 
-Workflow:
+2. Adjust the *config_name* in the file *td3_config* under **src** to match your chosen config
 
-1. Create your own config file within the /config folder. 
-2. Switch to the td3_config.py file
-3. Change the config_name to the name of your desired config file name (without the file extension)
-4. Switch to the main_td3.py file 
-5. Make your that your virtual environment is set-up properly (see I) 
-6. Run the code.
-    - The necessary data for an evaluation will be stored automatically in a Pandas DF within the folder /evals/result
-    - The visualisation graphic for the returns over time will be stored automatically within the folder /evals/returns
-    - The visualisation graphic for the losses over time will be stored automatically within the folder /evals/losses
+3. Use the *main* function in *main_td3* to begin the training of your agent. <br> If you are continuing training of a pretrained agent, use the flag *load_replay_buffer* to load your presaved replay_buffer if required.
 
+    **NOTE:** Using a saved replay buffer is not necessary for continuing training. <br> It is recommended then to let the agent explore for at least 10,000 Steps before beginning training
+
+1. Performance of the training (actor and critic losses) are recorded and saved under the directory **evals**. This folder is created automatically in the root of the repository.
+
+## II. Evaluating and visualizing trained models
+
+1. Select the config in *td3_config* you used to train the model
+
+2. Use the *main* function in *enjoy.py* to visualize and evaluate your trained model. The function takes two arguments - the *agent_type* and and optional *render_mode* . For a td3 agent, use *"td3"*. Render mode *"human"* visualizes in 3D environment.
+
+```
+main(agent_type="td3", render_mode="human")
+```
+
+3. The average return and standard deviations are returned and saved under a benchmarks csv file in the repository root and can be utilized to plot results.

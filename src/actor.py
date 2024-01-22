@@ -2,15 +2,42 @@ import tensorflow as tf
 
 class Actor(tf.keras.layers.Layer):
     def __init__(self, units=(400, 300), n_actions=2, stddev=0.00005, **kwargs):
-        super(Actor, self).__init__(**kwargs)
-        self.layers = []
-        for i, u in enumerate(units):
-            self.layers.append(tf.keras.layers.Dense(u, activation=tf.nn.leaky_relu,
-                                                     kernel_initializer=tf.keras.initializers.glorot_normal())) # Zwei layers mit neuronen
-        last_init = tf.random_normal_initializer(stddev=stddev)
-        self.layers.append(tf.keras.layers.Dense(n_actions, activation='tanh', kernel_initializer=last_init)) # letzte Layer welches die Aktionen ausgibt
+        """
+        Initialize the Actor network.
 
-    def call(self, inputs, **kwargs): # forward pass
+        Parameters:
+            - units (tuple): A tuple specifying the number of units/neurons in each hidden layer.
+            - n_actions (int): The dimension of the action space.
+            - stddev (float): The standard deviation for the kernel initializer.
+            - **kwargs: Additional keyword arguments to be passed to the base class.
+
+        Returns:
+            - None
+        """
+        super(Actor, self).__init__(**kwargs)
+    """_summary_:
+    This class implements the Actor Network.
+    """
+    def __init__(self, units=(400, 300), n_actions=2, stddev=0.00005, **kwargs): #initialize the Actor Network with a default size of 400 and 300
+        super(Actor, self).__init__(**kwargs) #initialize the super class
+        self.layers = []
+        for i, u in enumerate(units): # for loop for the layers
+            self.layers.append(tf.keras.layers.Dense(u, activation=tf.nn.leaky_relu,
+                                                        kernel_initializer=tf.keras.initializers.glorot_normal())) # two layers with neurons
+        last_init = tf.random_normal_initializer(stddev=stddev)
+        self.layers.append(tf.keras.layers.Dense(n_actions, activation='tanh', kernel_initializer=last_init)) # output layer with the dimension of the action space
+
+    def call(self, inputs, **kwargs):
+        """
+        Perform a forward pass through the actor network.
+
+        Parameters:
+            - inputs: The input tensor.
+            - **kwargs: Additional keyword arguments to be passed to the base class.
+
+        Returns:
+            - outputs: The output tensor after passing through all the layers.
+        """
         outputs = inputs
         for l in self.layers:
             outputs = l(outputs)
