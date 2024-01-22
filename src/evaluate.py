@@ -137,7 +137,7 @@ def evaluate_training(training_data_path_csv, **kwargs):
     plt.figure(figsize=(15,10))     #specify figure size
 
     # Plot the actor loss over time
-    X = np.array(list(range(1000, 1000001, int(1000000/len(training_data['actor_losses']))))[1:])
+    X = np.array(list(range(1000, 1000001, int(1000000/len(training_data['actor_losses']))))[-len(training_data['actor_losses']):])
     plt.plot(X, training_data['actor_losses'], color = "blue",label='Actor Loss')
     
     # Set labels and title
