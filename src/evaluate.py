@@ -14,7 +14,7 @@ import os
 data_path_csv = './benchmarks_td3_test_hp.csv'              #path to the csv file to evaluate the benchmark results
 training_data_path_csv = 'models/ddpg_gt/ddpg_results.csv'  #path to the csv file to evaluate the training results
 
-def evaluate_enjoy(data_path_csv:str = data_path_csv, plot_type: str = 'bar', plot_avgs:bool = False, plot_timeseries:bool = False, **kwargs):
+def evaluate_enjoy(data_path_csv:str, plot_type: str = 'bar', plot_avgs:bool = False, plot_timeseries:bool = False, **kwargs):
     """_summary_
     This function allows you to evaluate the enjoy phase of a trained model based on the benchmark results of the different agents.
 
