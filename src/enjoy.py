@@ -10,7 +10,7 @@ import pandas as pd
 #True, if you want to use the latest checkpoint of trained models
     
 
-def enjoy(agent_type:str, load_dir:str=None, use_latest:str=True, render:bool=True):  #defaults: agent_type="td3", load_dir=None, use_latest=True, render_mode=None
+def enjoy(agent_type:str, load_dir:str=None, use_latest:str=True, render:bool=True, num_episodes:int=150):  #defaults: agent_type="td3", load_dir=None, use_latest=True, render_mode=None
     """_summary_
     This function allows you to enjoy a trained agent in the environment.
 
@@ -41,7 +41,7 @@ def enjoy(agent_type:str, load_dir:str=None, use_latest:str=True, render:bool=Tr
     agent.load_weights(load_dir=load_dir, use_latest=use_latest) #load the weights of the agent
     obs, _ = env.reset() #reset the environment and get the initial observation
     
-    avg_return, avg_return_stddev, episode_no, returns, stddevs = compute_avg_return(env, agent, num_episodes=150, max_steps=1000, render=False) #compte the average return and specify the to be evaluated number of episodes
+    avg_return, avg_return_stddev, episode_no, returns, stddevs = compute_avg_return(env, agent, num_episodes=num_episodes, max_steps=1000, render=False) #compte the average return and specify the to be evaluated number of episodes
     print(f"Average return: {avg_return}, Standard deviation: {avg_return_stddev}")
     
     #To get a unique benchmark result, we save the results in a csv file
