@@ -21,7 +21,7 @@ source setup_env.bash
 ```
 cd ~
 wget https://mujoco.org/download/mujoco210-linux-x86_64.tar.gz
-tar -xzf mujoco210-linux-x86_64.tar
+tar -xzf mujoco210-linux-x86_64.tar.gz
 mkdir -p ~/.mujoco
 mv ~/mujoco210 ~/.mujoco/mujoco210
 echo "export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$HOME/.mujoco/mujoco210/bin" >> $HOME/.bashrc
