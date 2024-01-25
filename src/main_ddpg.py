@@ -15,7 +15,7 @@ from tqdm import tqdm
 
 
 
-def main(load_replay_buffer:bool = True):
+def main_training(load_replay_buffer:bool = True):
     """
     Main function for running the DDPG training algorithm.
 
@@ -124,6 +124,6 @@ def main(load_replay_buffer:bool = True):
 
     
 if __name__ == "__main__":
-    elapsed_time = timeit.timeit(lambda: main(load_replay_buffer=True), number=1)
+    elapsed_time = timeit.timeit(lambda: main_training(load_replay_buffer=True), number=1)
     minutes, seconds = divmod(elapsed_time, 60)
     print(f"The main function ran for {int(minutes)} minutes and {seconds:.2f} seconds.")

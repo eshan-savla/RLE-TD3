@@ -15,7 +15,7 @@ from td3 import TD3Agent
 from replay_buffer import ReplayBuffer
 from functions import compute_avg_return
 
-def main(load_replay_buffer:bool = True):
+def main_training(load_replay_buffer:bool = True):
     """
     The main function for running the TD3 training algorithm.
 
@@ -131,6 +131,6 @@ def main(load_replay_buffer:bool = True):
 
     
 if __name__ == "__main__":
-    elapsed_time = timeit.timeit(lambda: main(load_replay_buffer=True), number=1)
+    elapsed_time = timeit.timeit(lambda: main_training(load_replay_buffer=True), number=1)
     minutes, seconds = divmod(elapsed_time, 60)
     print(f"The main function ran for {int(minutes)} minutes and {seconds:.2f} seconds.")
