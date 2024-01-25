@@ -1,6 +1,6 @@
 # RLE-TD3
-This repository is part of lectures "Robot programming" from Prof. Dr.-Ing. Björn Hein at University of Applied Science Karlsruhe. <br>
-It contains the implemementation of the TD3 Reinforcment learning algorithm by Eshan Savla, Raphael Aberle and Leo Schäfer. <br>
+This [repository](https://github.com/eshan-savla/RLE-TD3) is part of lectures "Robot programming" from Prof. Dr.-Ing. Björn Hein at University of Applied Science Karlsruhe. <br>
+It contains the implemementation of the TD3 Reinforcement learning algorithm by Eshan Savla, Raphael Aberle and Leo Schäfer. <br>
 
 
 The models were trained and tested using the Ant-v3 environment from mujoco using [OpenAI's Gymnasiums](https://gymnasium.farama.org/index.html).
